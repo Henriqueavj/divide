@@ -126,11 +126,22 @@ a { color: inherit; text-decoration: none; }
   background: var(--cor-fundo-pagina); font-size: var(--texto-corpo); font-weight: 600; cursor: pointer;
 }
 .pilula.ativa { background: var(--cor-acao-selecionada); border-color: var(--cor-texto-principal); }
-.fab {
+/* Botões flutuantes: o principal fica colado no canto, os secundários empilham acima. */
+.fabs {
   position: fixed; bottom: 24px; z-index: 6;
   right: max(16px, calc((100vw - 480px) / 2 + 16px));
-  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  display: flex; flex-direction: column; align-items: flex-end; gap: var(--espaco-sm);
 }
+.fab { box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+.fab.btn-secundario { box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+
+/* Resumo do grupo */
+.resumo-total { background: var(--cor-fundo-superficie); border-radius: var(--raio-lg); padding: var(--espaco-md); display: flex; flex-direction: column; gap: var(--espaco-xxs); }
+.resumo-total .topo { display: flex; justify-content: space-between; align-items: center; gap: var(--espaco-xs); }
+.resumo-total .valor-total { font-size: var(--texto-cabecalho); font-weight: 600; }
+.selo { display: inline-flex; align-items: center; padding: var(--espaco-xxs) var(--espaco-xs); border-radius: var(--raio-pilula); background: var(--cor-saldo-positivo-fundo); color: var(--cor-saldo-positivo); font-size: var(--texto-legenda); font-weight: 500; white-space: nowrap; }
+.resumo-total .partes { margin-top: var(--espaco-xs); padding-top: var(--espaco-xs); border-top: 1px solid var(--cor-borda-padrao); display: flex; flex-direction: column; gap: var(--espaco-xxs); }
+.resumo-total .parte { display: flex; justify-content: space-between; gap: var(--espaco-sm); color: var(--cor-texto-secundario); }
 
 /* Campos */
 .conteudo { display: flex; flex-direction: column; gap: var(--espaco-lg); padding: var(--espaco-md); }
@@ -225,7 +236,7 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .sheet h2 { margin: 0; font-size: var(--texto-titulo); font-weight: 600; }
 .sheet .botoes { display: flex; flex-direction: column; gap: var(--espaco-xs); }
 .toast {
-  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 30;
+  position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top)); transform: translateX(-50%); z-index: 30;
   background: var(--cor-acao-principal); color: var(--cor-texto-sobre-acao);
   padding: var(--espaco-xs) var(--espaco-md); border-radius: var(--raio-pilula); font-weight: 500;
   max-width: calc(100vw - 32px);
@@ -248,8 +259,8 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .menu-aba[aria-current="page"] { opacity: 1; font-weight: 500; }
 .menu-aba:disabled { opacity: .3; cursor: default; }
 body.com-menu #app { padding-bottom: 168px; }
-body.com-menu .fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
-body.com-menu .toast { bottom: calc(144px + env(safe-area-inset-bottom)); }
+body.com-menu.dois-fabs #app { padding-bottom: 228px; }
+body.com-menu .fabs { bottom: calc(80px + env(safe-area-inset-bottom)); }
 .foto {
   width: 96px; height: 96px; border-radius: var(--raio-pilula);
   background: var(--cor-fundo-destaque); border: 1px dashed var(--cor-borda-forte);
@@ -625,7 +636,7 @@ function telaInicio() {
           <span class="t-corpo sec">Crie um grupo para a viagem, a casa ou o que vocês dividem.</span>
           <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
         </div></div>`}
-      ${lista.length ? `<a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a>` : ''}`,
+      ${lista.length ? `<div class="fabs"><a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a></div>` : ''}`,
     menu: 'grupos'
   };
 }
@@ -758,8 +769,8 @@ function telaGrupo(gid) {
   } else {
     corpo = `
       <div class="resumo">
-        <div class="linhas">${dividas.length ? frasesDivida(dividas) : `<span class="t-cg">${itens.length ? 'Tudo quitado neste grupo' : 'Nenhum gasto ainda'}</span>`}</div>
-        ${dividas.length ? `<div><a class="pilula" href="#/acerto/novo?grupo=${gid}">${icone('acertar')}Acertar contas</a></div>` : ''}
+        <div class="linhas">${dividas.length ? frasesDivida(dividas) : `<span class="t-cg">${itens.length ? 'Tudo acertado neste grupo' : 'Nenhum gasto ainda'}</span>`}</div>
+        ${htmlResumoTotal(g, dividas)}
       </div>
       ${itens.length ? itens.map(i => i.tipo === 'gasto' ? htmlItemGasto(i.obj) : htmlItemAcerto(i.obj)).join('')
         : `<p class="t-corpo sec" style="padding:16px">Toque em “Adicionar gasto” para lançar o primeiro.</p>`}`;
@@ -777,9 +788,38 @@ function telaGrupo(gid) {
         </div>
       </div>
       ${corpo}
-      ${sozinho ? '' : `<a class="btn btn-principal fab" href="#/gasto/novo?grupo=${gid}">${icone('mais')}Adicionar gasto</a>`}`,
-    menu: 'grupos'
+      ${sozinho ? '' : `<div class="fabs">
+        ${dividas.length ? `<a class="btn btn-secundario fab" href="#/acerto/novo?grupo=${gid}">Acertar contas</a>` : ''}
+        <a class="btn btn-principal fab" href="#/gasto/novo?grupo=${gid}">${icone('mais')}Adicionar gasto</a>
+      </div>`}`,
+    menu: 'grupos',
+    doisFabs: !sozinho && dividas.length > 0
   };
+}
+// Total gasto no grupo. Enquanto há contas em aberto mostra só o total;
+// com tudo acertado mostra também a parte de cada um (o quanto cada pessoa consumiu).
+function htmlResumoTotal(g, dividas) {
+  const gastos = gastosDo(g.id);
+  if (!gastos.length) return '';
+  const total = gastos.reduce((s, e) => s + e.valorCentavos, 0);
+  if (dividas.length) {
+    return `<div class="resumo-total">
+      <span class="t-legenda sec">Total até agora</span>
+      <span class="valor-total">${dinheiro(total)}</span>
+      <span class="t-legenda sec">Ainda há contas em aberto</span>
+    </div>`;
+  }
+  const parte = {};
+  for (const e of gastos) { const p = partes(e); for (const id in p) parte[id] = (parte[id] || 0) + p[id]; }
+  const ordem = [...g.membros.filter(id => parte[id]), ...Object.keys(parte).filter(id => !g.membros.includes(id))];
+  return `<div class="resumo-total">
+    <div class="topo"><span class="t-legenda sec">${g.tipo === 'viagem' ? 'Total da viagem' : 'Total do grupo'}</span><span class="selo">✓ Tudo acertado</span></div>
+    <span class="valor-total">${dinheiro(total)}</span>
+    <div class="partes">
+      <span class="t-legenda ter">Parte de cada um</span>
+      ${ordem.map(id => `<div class="parte t-corpo"><span class="cortar">${esc(nomeComVoce(id))}</span><span>${dinheiro(parte[id])}</span></div>`).join('')}
+    </div>
+  </div>`;
 }
 
 // 04 Adicionar / editar gasto
@@ -1303,6 +1343,7 @@ function render() {
   app = novoApp;
   app.innerHTML = tela.html + (tela.menu ? menuInferior(tela.menu) : '');
   document.body.classList.toggle('com-menu', !!tela.menu);
+  document.body.classList.toggle('dois-fabs', !!tela.doisFabs);
   tela.ligar && tela.ligar();
   if (rotaAtual !== rotaAnterior) window.scrollTo(0, 0);
   rotaAnterior = rotaAtual;
