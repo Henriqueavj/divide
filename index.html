@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<title>Divide</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone-192.png">
+<link rel="apple-touch-icon" href="icone-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Divide">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Tokens primitivos (iguais ao FigCraft) ===== */
+:root {
+  --cinza-0: #FFFFFF; --cinza-50: #F6F6F6; --cinza-100: #EDEDED; --cinza-200: #DADADA;
+  --cinza-300: #C2C2C2; --cinza-400: #9E9E9E; --cinza-500: #7A7A7A; --cinza-600: #5C5C5C;
+  --cinza-700: #424242; --cinza-800: #2B2B2B; --cinza-900: #1A1A1A;
+  --verde-50: #E8F5EE; --verde-600: #1E8A57;
+  --laranja-50: #FCEFE6; --laranja-600: #C8561A;
+  --azul-300: #A9C4E0; --rosa-300: #E3AFB8; --areia-300: #E5C9A6; --menta-300: #A8D5C2;
+  --tamanho-4: 4px; --tamanho-8: 8px; --tamanho-12: 12px; --tamanho-14: 14px; --tamanho-16: 16px;
+  --tamanho-20: 20px; --tamanho-24: 24px; --tamanho-32: 32px; --tamanho-999: 999px;
+  --fonte-familia: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* ===== Tokens semânticos ===== */
+  --cor-fundo-pagina: var(--cinza-0);
+  --cor-fundo-superficie: var(--cinza-50);
+  --cor-fundo-destaque: var(--cinza-100);
+  --cor-borda-padrao: var(--cinza-200);
+  --cor-borda-forte: var(--cinza-400);
+  --cor-texto-principal: var(--cinza-900);
+  --cor-texto-secundario: var(--cinza-600);
+  --cor-texto-terciario: var(--cinza-500);
+  --cor-texto-sobre-acao: var(--cinza-0);
+  --cor-acao-principal: var(--cinza-800);
+  --cor-acao-secundaria: var(--cinza-0);
+  --cor-acao-selecionada: var(--cinza-100);
+  --cor-saldo-positivo: var(--verde-600);
+  --cor-saldo-positivo-fundo: var(--verde-50);
+  --cor-saldo-negativo: var(--laranja-600);
+  --cor-saldo-negativo-fundo: var(--laranja-50);
+  --cor-capa-viagem: var(--areia-300);
+  --cor-capa-casa: var(--azul-300);
+  --cor-capa-casal: var(--rosa-300);
+  --cor-capa-outro: var(--menta-300);
+  --espaco-xxs: var(--tamanho-4); --espaco-xs: var(--tamanho-8); --espaco-sm: var(--tamanho-12);
+  --espaco-md: var(--tamanho-16); --espaco-lg: var(--tamanho-24); --espaco-xl: var(--tamanho-32);
+  --raio-sm: var(--tamanho-4); --raio-md: var(--tamanho-8); --raio-lg: var(--tamanho-12); --raio-pilula: var(--tamanho-999);
+  --texto-legenda: var(--tamanho-12); --texto-corpo: var(--tamanho-14); --texto-corpo-grande: var(--tamanho-16);
+  --texto-titulo: var(--tamanho-20); --texto-cabecalho: var(--tamanho-24); --texto-destaque: var(--tamanho-32);
+  --texto-familia: var(--fonte-familia);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--cor-fundo-superficie);
+  color: var(--cor-texto-principal);
+  font-family: var(--texto-familia);
+  font-size: var(--texto-corpo);
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, select { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+#app {
+  max-width: 480px; min-height: 100vh; margin: 0 auto;
+  background: var(--cor-fundo-pagina);
+  padding-bottom: 104px;
+}
+
+/* Estilos de texto */
+.t-destaque { font-size: var(--texto-destaque); font-weight: 700; }
+.t-cabecalho { font-size: var(--texto-cabecalho); font-weight: 600; }
+.t-titulo { font-size: var(--texto-titulo); font-weight: 600; }
+.t-cg { font-size: var(--texto-corpo-grande); }
+.t-cg-forte { font-size: var(--texto-corpo-grande); font-weight: 600; }
+.t-corpo { font-size: var(--texto-corpo); }
+.t-corpo-forte { font-size: var(--texto-corpo); font-weight: 600; }
+.t-legenda { font-size: var(--texto-legenda); }
+.t-legenda-forte { font-size: var(--texto-legenda); font-weight: 500; }
+.sec { color: var(--cor-texto-secundario); }
+.ter { color: var(--cor-texto-terciario); }
+.pos { color: var(--cor-saldo-positivo); }
+.neg { color: var(--cor-saldo-negativo); }
+.m0 { margin: 0; }
+
+.icone { width: 24px; height: 24px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-icone {
+  border: 0; background: none; padding: 8px; margin: -8px; border-radius: var(--raio-pilula);
+  display: inline-flex; cursor: pointer; color: var(--cor-texto-principal);
+}
+.btn-icone:active { background: var(--cor-fundo-destaque); }
+
+/* Barra superior */
+.barra {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: var(--espaco-md);
+  padding: var(--espaco-md); background: var(--cor-fundo-pagina);
+}
+.barra h1 { flex: 1; margin: 0; font-size: var(--texto-titulo); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Botões */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--espaco-xs);
+  min-height: 48px; padding: var(--espaco-sm) var(--espaco-lg);
+  border-radius: var(--raio-pilula); border: 1px solid transparent;
+  font-size: var(--texto-corpo-grande); font-weight: 600; cursor: pointer;
+}
+.btn-principal { background: var(--cor-acao-principal); color: var(--cor-texto-sobre-acao); }
+.btn-secundario { background: var(--cor-acao-secundaria); color: var(--cor-texto-principal); border-color: var(--cor-borda-forte); }
+.btn-perigo { background: var(--cor-acao-secundaria); color: var(--cor-saldo-negativo); border-color: var(--cor-saldo-negativo); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn-bloco { width: 100%; }
+.btn-texto { background: none; border: 0; padding: var(--espaco-xs) 0; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.pilula {
+  display: inline-flex; align-items: center; gap: var(--espaco-xs);
+  padding: var(--espaco-xs) var(--espaco-md); min-height: 36px;
+  border-radius: var(--raio-pilula); border: 1px solid var(--cor-borda-forte);
+  background: var(--cor-fundo-pagina); font-size: var(--texto-corpo); font-weight: 600; cursor: pointer;
+}
+.pilula.ativa { background: var(--cor-acao-selecionada); border-color: var(--cor-texto-principal); }
+.fab {
+  position: fixed; bottom: 24px; z-index: 6;
+  right: max(16px, calc((100vw - 480px) / 2 + 16px));
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+
+/* Campos */
+.conteudo { display: flex; flex-direction: column; gap: var(--espaco-lg); padding: var(--espaco-md); }
+.campo { display: flex; flex-direction: column; gap: var(--espaco-xxs); }
+.campo-rotulo { font-size: var(--texto-legenda); color: var(--cor-texto-secundario); }
+.campo-entrada {
+  width: 100%; border: 0; border-bottom: 1px solid var(--cor-borda-forte); border-radius: 0;
+  background: transparent; padding: var(--espaco-xs) 0; font-size: var(--texto-corpo-grande);
+  outline: none; appearance: none; -webkit-appearance: none;
+}
+.campo-entrada::placeholder { color: var(--cor-texto-terciario); }
+.campo-entrada:focus { border-bottom: 2px solid var(--cor-texto-principal); padding-bottom: 7px; }
+select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right center; padding-right: 24px; }
+.campo-valor { font-size: var(--texto-cabecalho); font-weight: 600; }
+.campo-erro { font-size: var(--texto-legenda); color: var(--cor-saldo-negativo); min-height: 0; }
+.linha-add { display: flex; gap: var(--espaco-sm); align-items: flex-end; }
+.linha-add .campo { flex: 1; }
+
+/* Capa e itens */
+.capa {
+  width: 56px; height: 56px; flex: none; border-radius: var(--raio-lg);
+  display: flex; align-items: center; justify-content: center; color: var(--cor-texto-principal);
+}
+.item {
+  display: flex; align-items: center; gap: var(--espaco-md);
+  padding: var(--espaco-sm) var(--espaco-md); width: 100%;
+  background: none; border: 0; text-align: left; cursor: pointer;
+}
+.item:active { background: var(--cor-fundo-superficie); }
+.item-textos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cortar { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-gasto { gap: var(--espaco-sm); }
+.item-gasto .data { width: 32px; flex: none; display: flex; flex-direction: column; align-items: center; }
+.item-gasto .data .dia { font-size: var(--texto-titulo); font-weight: 600; line-height: 1.1; }
+.item-gasto .valor { width: 104px; flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.avatar {
+  width: 40px; height: 40px; flex: none; border-radius: var(--raio-pilula);
+  background: var(--cor-fundo-destaque); display: flex; align-items: center; justify-content: center;
+  font-size: var(--texto-corpo); font-weight: 600;
+}
+.avatar.grande { width: 56px; height: 56px; font-size: var(--texto-corpo-grande); }
+.secao-titulo { padding: var(--espaco-md) var(--espaco-md) var(--espaco-xxs); font-size: var(--texto-legenda); color: var(--cor-texto-secundario); }
+.divisor { height: 1px; background: var(--cor-borda-padrao); margin: 0; border: 0; }
+.cartao { background: var(--cor-fundo-superficie); border-radius: var(--raio-lg); padding: var(--espaco-md); display: flex; flex-direction: column; gap: var(--espaco-xxs); }
+.cartao.centro { align-items: center; text-align: center; padding: var(--espaco-lg); gap: var(--espaco-md); }
+.nota { font-size: var(--texto-legenda); color: var(--cor-texto-secundario); }
+
+/* Seletor de tipo */
+.seletores { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--espaco-xs); }
+.seletor {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--espaco-xs);
+  min-height: 76px; padding: var(--espaco-sm) var(--espaco-xxs);
+  border: 1px solid var(--cor-borda-padrao); border-radius: var(--raio-lg);
+  background: var(--cor-fundo-pagina); font-size: var(--texto-legenda); font-weight: 500; cursor: pointer;
+}
+.seletor[aria-pressed="true"] { background: var(--cor-acao-selecionada); border: 2px solid var(--cor-texto-principal); }
+
+/* Chips de membros */
+.chips { display: flex; flex-wrap: wrap; gap: var(--espaco-xs); }
+.chip {
+  display: inline-flex; align-items: center; gap: var(--espaco-xs);
+  padding: 6px 6px 6px var(--espaco-sm); border-radius: var(--raio-pilula);
+  background: var(--cor-fundo-destaque); font-size: var(--texto-corpo); font-weight: 500;
+}
+.chip.sem-x { padding-right: var(--espaco-sm); }
+.chip button { border: 0; background: none; padding: 2px; display: inline-flex; cursor: pointer; border-radius: 99px; }
+.chip .icone { width: 16px; height: 16px; }
+.check-pessoa { cursor: pointer; }
+.check-pessoa input { position: absolute; opacity: 0; pointer-events: none; }
+.check-pessoa .pilula { pointer-events: none; }
+
+/* Grupo */
+.capa-grande {
+  min-height: 176px; padding: var(--espaco-md);
+  display: flex; flex-direction: column; justify-content: space-between; gap: var(--espaco-md);
+}
+.capa-grande .acoes { display: flex; justify-content: space-between; }
+.capa-grande .btn-icone { background: rgba(255,255,255,.6); margin: 0; }
+.resumo { padding: var(--espaco-md) var(--espaco-md) var(--espaco-xs); display: flex; flex-direction: column; gap: var(--espaco-sm); }
+.resumo .linhas { display: flex; flex-direction: column; gap: 2px; }
+
+/* Sheet e toast */
+.fundo-sheet {
+  position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.35);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.sheet {
+  width: 100%; max-width: 480px; background: var(--cor-fundo-pagina);
+  border-radius: var(--raio-lg) var(--raio-lg) 0 0; padding: var(--espaco-lg) var(--espaco-md) calc(var(--espaco-lg) + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: var(--espaco-md);
+}
+.sheet h2 { margin: 0; font-size: var(--texto-titulo); font-weight: 600; }
+.sheet .botoes { display: flex; flex-direction: column; gap: var(--espaco-xs); }
+.toast {
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 30;
+  background: var(--cor-acao-principal); color: var(--cor-texto-sobre-acao);
+  padding: var(--espaco-xs) var(--espaco-md); border-radius: var(--raio-pilula); font-weight: 500;
+  max-width: calc(100vw - 32px);
+}
+.aviso { margin: var(--espaco-md); padding: var(--espaco-sm); border-radius: var(--raio-md); background: var(--cor-saldo-negativo-fundo); color: var(--cor-saldo-negativo); font-size: var(--texto-legenda); }
+.oculto { display: none !important; }
+
+/* Menu inferior */
+.menu {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 7;
+  width: 100%; max-width: 480px; display: flex;
+  padding: 0 var(--espaco-xs) env(safe-area-inset-bottom);
+  background: var(--cor-fundo-pagina); border-top: 1px solid var(--cor-borda-padrao);
+}
+.menu-aba {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--espaco-xxs);
+  padding: var(--espaco-xs) var(--espaco-xxs); border: 0; background: none; cursor: pointer;
+  font-size: var(--texto-legenda); color: var(--cor-texto-principal); opacity: .55;
+}
+.menu-aba[aria-current="page"] { opacity: 1; font-weight: 500; }
+.menu-aba:disabled { opacity: .3; cursor: default; }
+body.com-menu #app { padding-bottom: 168px; }
+body.com-menu .fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
+body.com-menu .toast { bottom: calc(144px + env(safe-area-inset-bottom)); }
+.foto {
+  width: 96px; height: 96px; border-radius: var(--raio-pilula);
+  background: var(--cor-fundo-destaque); border: 1px dashed var(--cor-borda-forte);
+  display: flex; align-items: center; justify-content: center; color: var(--cor-texto-secundario);
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<input type="file" id="arquivo-importar" accept="application/json,.json" class="oculto">
+<script>
+'use strict';
+
+/* ================= Dados ================= */
+const CHAVE = 'divide.dados.v1';
+const ESQUEMA = 1;
+let armazenamentoOk = true;
+
+function dadosVazios() {
+  return { esquema: ESQUEMA, euId: null, pessoas: {}, grupos: {}, gastos: {}, acertos: {} };
+}
+function carregar() {
+  try {
+    const bruto = localStorage.getItem(CHAVE);
+    if (!bruto) return dadosVazios();
+    const d = JSON.parse(bruto);
+    return validarDados(d) ? d : dadosVazios();
+  } catch (e) { armazenamentoOk = false; return dadosVazios(); }
+}
+function salvar() {
+  try { localStorage.setItem(CHAVE, JSON.stringify(db)); armazenamentoOk = true; }
+  catch (e) { armazenamentoOk = false; }
+}
+function validarDados(d) {
+  return d && typeof d === 'object' && d.esquema === ESQUEMA &&
+    ['pessoas', 'grupos', 'gastos', 'acertos'].every(k => d[k] && typeof d[k] === 'object');
+}
+let db = carregar();
+
+const novoId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+const agora = () => new Date().toISOString();
+
+/* ================= Formatação ================= */
+const formatoBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const dinheiro = c => formatoBRL.format(c / 100).replace(/ /g, ' ');
+function lerDinheiro(s) {
+  s = String(s == null ? '' : s).replace(/R\$|\s/g, '');
+  if (!s) return NaN;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if ((s.match(/\./g) || []).length > 1 || /^\d{1,3}\.\d{3}$/.test(s)) s = s.replace(/\./g, '');
+  if (!/^\d*\.?\d*$/.test(s)) return NaN;
+  const v = Number(s);
+  return isFinite(v) ? Math.round(v * 100) : NaN;
+}
+const comPontos = inteiro => inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const centavosParaCampo = c => { const [i, d] = (c / 100).toFixed(2).split('.'); return comPontos(i) + ',' + d; };
+
+/* Máscara de valor estilo calculadora (como no Nubank): o campo começa em "0,00" e cada
+   número digitado entra pela direita: 1 → 0,01 → 12 → 0,12 → 129 → 1,29 → 12910 → 129,10.
+   Apagar tira o último número. Não precisa digitar vírgula; o ponto de milhar é automático. */
+const MAX_DIGITOS = 11; // até R$ 999.999.999,99
+const FORMATO_VALOR = /^\d{1,3}(\.\d{3})*,\d{2}$/;
+function mascararDinheiro(el) {
+  const digitos = () => el.value.replace(/\D/g, '');
+  const cursorNoFim = () => { const n = el.value.length; try { el.setSelectionRange(n, n); } catch (_) { /* ignora */ } };
+  const pintar = d => {
+    d = d.replace(/^0+/, '').slice(0, MAX_DIGITOS);
+    el.value = centavosParaCampo(Number(d || '0'));
+    cursorNoFim();
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  if (!FORMATO_VALOR.test(el.value)) el.value = centavosParaCampo(lerDinheiro(el.value) || 0);
+  el.addEventListener('beforeinput', e => {
+    if (e.inputType === 'insertFromPaste') return;
+    e.preventDefault();
+    const tudoSelecionado = el.selectionStart === 0 && el.selectionEnd === el.value.length;
+    let d = tudoSelecionado ? '' : digitos();
+    if (e.inputType.startsWith('insert')) d += (e.data || '').replace(/\D/g, '');
+    else if (e.inputType.startsWith('delete') && !tudoSelecionado) d = d.slice(0, -1);
+    pintar(d);
+  });
+  el.addEventListener('paste', e => {
+    e.preventDefault();
+    const c = lerDinheiro((e.clipboardData || window.clipboardData).getData('text'));
+    if (!isNaN(c)) pintar(String(c));
+  });
+  // Rede de segurança para teclados que não avisam antes de digitar.
+  el.addEventListener('input', e => { if (e.isTrusted && !FORMATO_VALOR.test(el.value)) pintar(digitos()); });
+  // Mantém o cursor no fim, mas respeita quando a pessoa seleciona o valor inteiro para trocar.
+  ['focus', 'click', 'keyup'].forEach(t => el.addEventListener(t, () => setTimeout(() => {
+    if (el.selectionStart === el.selectionEnd) cursorNoFim();
+  }, 0)));
+}
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+function hojeISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function dataBR(iso) { const [a, m, d] = iso.slice(0, 10).split('-'); return d + '/' + m + '/' + a; }
+function dataHoraBR(iso) { return dataBR(isoLocal(iso)); }
+function isoLocal(iso) {
+  const d = new Date(iso);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function iniciais(nome) {
+  const p = String(nome || '?').trim().split(/\s+/).filter(Boolean);
+  return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+}
+// Iniciais que não se repetem dentro de um grupo: Henrique e Heloisa viram "Hen" e "Hel".
+function iniciaisNoGrupo(id, ids) {
+  const minha = iniciais(nomeDe(id));
+  const outros = ids.filter(o => o !== id);
+  if (!outros.some(o => iniciais(nomeDe(o)) === minha)) return minha;
+  const limpo = n => normalizar(n).replace(/\s/g, '');
+  const n = limpo(nomeDe(id));
+  for (let i = 2; i <= Math.min(3, n.length); i++) {
+    const pre = n.slice(0, i).toLowerCase();
+    if (!outros.some(o => limpo(nomeDe(o)).toLowerCase().startsWith(pre))) return n[0].toUpperCase() + n.slice(1, i).toLowerCase();
+  }
+  return minha;
+}
+const normalizar = s => String(s || '').trim().replace(/\s+/g, ' ');
+const mesmoNome = (a, b) => normalizar(a).toLocaleLowerCase('pt-BR') === normalizar(b).toLocaleLowerCase('pt-BR');
+
+/* ================= Ícones ================= */
+const ICONES = {
+  'seta-voltar': '<path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>',
+  'fechar': '<path d="M18 6L6 18"/><path d="M6 6l12 12"/>',
+  'check': '<path d="M20 6L9 17l-5-5"/>',
+  'mais': '<path d="M12 5v14"/><path d="M5 12h14"/>',
+  'engrenagem': '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="M4.9 4.9L7 7"/><path d="M17 17l2.1 2.1"/><path d="M4.9 19.1L7 17"/><path d="M17 7l2.1-2.1"/>',
+  'viagem': '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
+  'casa': '<path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+  'casal': '<path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/>',
+  'outro': '<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h1"/><path d="M3 12h1"/><path d="M3 18h1"/>',
+  'recibo': '<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/>',
+  'lapis': '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
+  'lixeira': '<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>',
+  'calendario': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/>',
+  'pessoa-mais': '<circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6"/><path d="M19 8v6"/><path d="M16 11h6"/>',
+  'pessoas': '<circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6"/><path d="M16 4a4 4 0 0 1 0 8"/><path d="M18 15c2.5.5 4 2.5 4 6"/>',
+  'acertar': '<path d="M7 4L3 8l4 4"/><path d="M3 8h14"/><path d="M17 20l4-4-4-4"/><path d="M21 16H7"/>',
+  'pessoa': '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  'atividade': '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  'conta': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.5-2 3.5-3 5.5-3s4 1 5.5 3"/>',
+  'camera': '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3"/>'
+};
+function menuInferior(ativa) {
+  const aba = (id, rotulo, ic, href) => `<a class="menu-aba" href="#${href}" ${ativa === id ? 'aria-current="page"' : ''}>${icone(ic)}${rotulo}</a>`;
+  return `<nav class="menu" aria-label="Menu principal">
+    ${aba('grupos', 'Grupos', 'pessoas', '/')}
+    ${aba('amigos', 'Amigos', 'pessoa', '/amigos')}
+    <button class="menu-aba" type="button" disabled title="Em breve">${icone('atividade')}Atividade</button>
+    ${aba('conta', 'Conta', 'conta', '/conta')}
+  </nav>`;
+}
+const icone = (n, cls = '') => `<svg class="icone ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONES[n] || ''}</svg>`;
+
+const TIPOS = {
+  viagem: { rotulo: 'Viagem', icone: 'viagem', cor: 'var(--cor-capa-viagem)' },
+  casa: { rotulo: 'Casa', icone: 'casa', cor: 'var(--cor-capa-casa)' },
+  casal: { rotulo: 'Casal', icone: 'casal', cor: 'var(--cor-capa-casal)' },
+  outro: { rotulo: 'Outro', icone: 'outro', cor: 'var(--cor-capa-outro)' }
+};
+const tipoDe = g => TIPOS[g && g.tipo] || TIPOS.outro;
+
+/* ================= Consultas ================= */
+const eu = () => db.euId;
+const pessoa = id => db.pessoas[id];
+const nomeDe = id => (pessoa(id) && pessoa(id).nome) || 'Pessoa removida';
+const nomeCurto = id => id === eu() ? 'Você' : nomeDe(id);
+const nomeComVoce = id => id === eu() ? nomeDe(id) + ' (você)' : nomeDe(id);
+const gastosDo = gid => Object.values(db.gastos).filter(e => e.grupoId === gid);
+const acertosDo = gid => Object.values(db.acertos).filter(p => p.grupoId === gid);
+const grupos = () => Object.values(db.grupos);
+
+/* ================= Cálculos ================= */
+// Divide o valor em partes iguais. Os centavos que sobram vão primeiro para quem pagou,
+// depois para os outros participantes na ordem do grupo.
+function partes(gasto) {
+  const ids = gasto.divididoEntre.slice();
+  const n = ids.length;
+  const out = {};
+  if (!n) return out;
+  const base = Math.floor(gasto.valorCentavos / n);
+  let resto = gasto.valorCentavos - base * n;
+  const ordem = ids.includes(gasto.pagoPor) ? [gasto.pagoPor, ...ids.filter(i => i !== gasto.pagoPor)] : ids;
+  for (const id of ordem) { out[id] = base + (resto > 0 ? 1 : 0); if (resto > 0) resto--; }
+  return out;
+}
+// Saldo de cada pessoa no grupo: positivo = tem a receber, negativo = deve.
+function saldosDoGrupo(gid) {
+  const g = db.grupos[gid];
+  const saldo = {};
+  (g ? g.membros : []).forEach(id => { saldo[id] = 0; });
+  for (const e of gastosDo(gid)) {
+    saldo[e.pagoPor] = (saldo[e.pagoPor] || 0) + e.valorCentavos;
+    const p = partes(e);
+    for (const id in p) saldo[id] = (saldo[id] || 0) - p[id];
+  }
+  for (const a of acertosDo(gid)) {
+    saldo[a.de] = (saldo[a.de] || 0) + a.valorCentavos;
+    saldo[a.para] = (saldo[a.para] || 0) - a.valorCentavos;
+  }
+  return saldo;
+}
+// Simplificação: quem mais deve paga para quem mais tem a receber, até zerar.
+function simplificar(saldo) {
+  const credores = [], devedores = [];
+  for (const id in saldo) {
+    if (saldo[id] > 0) credores.push({ id, v: saldo[id] });
+    else if (saldo[id] < 0) devedores.push({ id, v: -saldo[id] });
+  }
+  const res = [];
+  while (credores.length && devedores.length) {
+    credores.sort((a, b) => b.v - a.v);
+    devedores.sort((a, b) => b.v - a.v);
+    const c = credores[0], d = devedores[0];
+    const m = Math.min(c.v, d.v);
+    res.push({ de: d.id, para: c.id, valor: m });
+    c.v -= m; d.v -= m;
+    if (!c.v) credores.shift();
+    if (!d.v) devedores.shift();
+  }
+  return res;
+}
+const meuSaldoNo = gid => saldosDoGrupo(gid)[eu()] || 0;
+const meuSaldoGeral = () => grupos().reduce((s, g) => s + meuSaldoNo(g.id), 0);
+function pessoaTemMovimento(gid, pid) {
+  return gastosDo(gid).some(e => e.pagoPor === pid || e.divididoEntre.includes(pid)) ||
+    acertosDo(gid).some(a => a.de === pid || a.para === pid);
+}
+function ultimaAtividade(g) {
+  let t = g.atualizadoEm || g.criadoEm;
+  for (const e of gastosDo(g.id)) if (e.atualizadoEm > t) t = e.atualizadoEm;
+  for (const a of acertosDo(g.id)) if (a.atualizadoEm > t) t = a.atualizadoEm;
+  return t;
+}
+
+/* ================= Ações nos dados ================= */
+function acharOuCriarPessoa(nome) {
+  nome = normalizar(nome);
+  const existente = Object.values(db.pessoas).find(p => mesmoNome(p.nome, nome));
+  if (existente) return existente.id;
+  const id = novoId();
+  db.pessoas[id] = { id, nome, criadoEm: agora(), atualizadoEm: agora() };
+  return id;
+}
+function tocarGrupo(gid) { if (db.grupos[gid]) db.grupos[gid].atualizadoEm = agora(); }
+
+/* ================= Interface: utilitários ================= */
+let app = document.getElementById('app');
+let toastTimer;
+function toast(msg) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
+  document.body.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.remove(), 2200);
+}
+function abrirSheet(html, ao) {
+  const fundo = document.createElement('div');
+  fundo.className = 'fundo-sheet';
+  fundo.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  const fechar = () => fundo.remove();
+  fundo.addEventListener('click', e => { if (e.target === fundo) fechar(); });
+  document.body.appendChild(fundo);
+  ao && ao(fundo.querySelector('.sheet'), fechar);
+  const f = fundo.querySelector('input'); if (f) setTimeout(() => f.focus(), 50);
+  return fechar;
+}
+function confirmar({ titulo, texto, ok = 'Confirmar', perigo = false }) {
+  return new Promise(resolve => {
+    abrirSheet(`
+      <h2>${esc(titulo)}</h2>
+      ${texto ? `<p class="m0 t-corpo sec">${esc(texto)}</p>` : ''}
+      <div class="botoes">
+        <button class="btn ${perigo ? 'btn-perigo' : 'btn-principal'} btn-bloco" data-r="1">${esc(ok)}</button>
+        <button class="btn btn-secundario btn-bloco" data-r="0">Cancelar</button>
+      </div>`, (s, fechar) => {
+      s.addEventListener('click', e => {
+        const b = e.target.closest('[data-r]');
+        if (b) { fechar(); resolve(b.dataset.r === '1'); }
+      });
+    });
+  });
+}
+const ir = rota => { location.hash = rota; };
+const barra = ({ voltar, voltarIcone = 'seta-voltar', titulo, direita = '' }) => `
+  <header class="barra">
+    <a class="btn-icone" href="#${voltar}" aria-label="${voltarIcone === 'fechar' ? 'Fechar' : 'Voltar'}">${icone(voltarIcone)}</a>
+    <h1>${esc(titulo)}</h1>
+    ${direita}
+  </header>`;
+const campo = ({ rotulo, nome, valor = '', tipo = 'text', placeholder = '', extra = '', classe = '' }) => `
+  <label class="campo">
+    <span class="campo-rotulo">${esc(rotulo)}</span>
+    <input class="campo-entrada ${classe}" name="${nome}" type="${tipo}" value="${esc(valor)}" placeholder="${esc(placeholder)}" ${extra}>
+    <span class="campo-erro" data-erro="${nome}"></span>
+  </label>`;
+const capa = g => `<div class="capa" style="background:${tipoDe(g).cor}">${icone(tipoDe(g).icone)}</div>`;
+function mostrarErro(form, nome, msg) {
+  const el = form.querySelector(`[data-erro="${nome}"]`);
+  if (el) el.textContent = msg || '';
+}
+function avisoArmazenamento() {
+  return armazenamentoOk ? '' : `<div class="aviso">Este navegador não está deixando salvar. Os dados somem ao fechar a página. Exporte antes de sair.</div>`;
+}
+
+/* ================= Telas ================= */
+
+// 00 Seu nome
+function telaBemvindo() {
+  return {
+    html: `
+      <div class="conteudo" style="padding-top:120px;padding-left:24px;padding-right:24px">
+        <h1 class="t-cabecalho m0">Como você se chama?</h1>
+        <p class="t-cg sec m0">Seu nome aparece nos gastos e fica salvo só neste celular.</p>
+        <form id="f" class="conteudo" style="padding:0" novalidate>
+          ${campo({ rotulo: 'Seu nome', nome: 'nome', placeholder: 'Ex.: Henrique', extra: 'autocomplete="given-name" maxlength="40" autofocus' })}
+          <button class="btn btn-principal btn-bloco" type="submit">Começar</button>
+        </form>
+        <button class="btn-texto t-corpo" type="button" data-acao="importar">Já usa em outro aparelho? Importar dados</button>
+      </div>`,
+    ligar() {
+      const f = document.getElementById('f');
+      f.addEventListener('submit', e => {
+        e.preventDefault();
+        const nome = normalizar(f.nome.value);
+        if (!nome) return mostrarErro(f, 'nome', 'Digite seu nome.');
+        db.euId = acharOuCriarPessoa(nome);
+        salvar();
+        ir('/');
+      });
+    }
+  };
+}
+
+// 01 Início
+function telaInicio() {
+  const lista = grupos().sort((a, b) => ultimaAtividade(b).localeCompare(ultimaAtividade(a)));
+  const geral = meuSaldoGeral();
+  const saldoGeral = geral > 0
+    ? `<span class="t-corpo sec">No geral, te devem</span><span class="t-destaque pos">${dinheiro(geral)}</span>`
+    : geral < 0
+      ? `<span class="t-corpo sec">No geral, você deve</span><span class="t-destaque neg">${dinheiro(-geral)}</span>`
+      : `<span class="t-corpo sec">No geral</span><span class="t-destaque">Tudo quitado</span>`;
+  const itens = lista.map(g => {
+    const s = meuSaldoNo(g.id);
+    const linha = s > 0 ? `<span class="t-corpo pos">te devem ${dinheiro(s)}</span>`
+      : s < 0 ? `<span class="t-corpo neg">você deve ${dinheiro(-s)}</span>`
+        : `<span class="t-corpo ter">${gastosDo(g.id).length ? 'quitado' : 'sem gastos'}</span>`;
+    return `<a class="item" href="#/grupo/${g.id}">${capa(g)}
+      <span class="item-textos"><span class="t-cg-forte cortar">${esc(g.nome)}</span>${linha}</span></a>`;
+  }).join('');
+  return {
+    html: `
+      ${avisoArmazenamento()}
+      <div style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h1 class="t-cabecalho m0">Grupos</h1>
+          <a class="btn-icone" href="#/grupo/novo" aria-label="Criar grupo">${icone('pessoa-mais')}</a>
+        </div>
+        ${lista.length ? `<div style="display:flex;flex-direction:column;gap:4px">${saldoGeral}</div>` : ''}
+      </div>
+      ${lista.length ? itens : `
+        <div style="padding:16px"><div class="cartao centro">
+          <span class="t-cg-forte">Nenhum grupo ainda</span>
+          <span class="t-corpo sec">Crie um grupo para a viagem, a casa ou o que vocês dividem.</span>
+          <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
+        </div></div>`}
+      ${lista.length ? `<a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a>` : ''}`,
+    menu: 'grupos'
+  };
+}
+
+// 02 Criar grupo
+let rascunhoGrupo = null;
+function telaCriarGrupo() {
+  if (!rascunhoGrupo) rascunhoGrupo = { nome: '', tipo: 'viagem', nomes: [] };
+  const r = rascunhoGrupo;
+  const sugestoes = Object.values(db.pessoas).filter(p => p.id !== eu() && !r.nomes.some(n => mesmoNome(n, p.nome)));
+  return {
+    html: `
+      <form id="f" novalidate>
+        ${barra({ voltar: '/', voltarIcone: 'fechar', titulo: 'Criar grupo', direita: `<button class="btn-icone" type="submit" aria-label="Salvar">${icone('check')}</button>` })}
+        <div class="conteudo">
+          ${campo({ rotulo: 'Nome do grupo', nome: 'nome', valor: r.nome, placeholder: 'Ex.: Socorro', extra: 'maxlength="40" autofocus' })}
+          <div class="campo">
+            <span class="campo-rotulo">Tipo</span>
+            <div class="seletores">
+              ${Object.entries(TIPOS).map(([k, t]) => `<button type="button" class="seletor" data-tipo="${k}" aria-pressed="${r.tipo === k}">${icone(t.icone)}${t.rotulo}</button>`).join('')}
+            </div>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo">Membros</span>
+            <div class="chips">
+              <span class="chip sem-x">${esc(nomeComVoce(eu()))}</span>
+              ${r.nomes.map((n, i) => `<span class="chip">${esc(n)}<button type="button" data-remover="${i}" aria-label="Tirar ${esc(n)}">${icone('fechar')}</button></span>`).join('')}
+            </div>
+          </div>
+          <div class="linha-add">
+            ${campo({ rotulo: 'Adicionar pessoa', nome: 'pessoa', placeholder: 'Digite o nome', extra: 'maxlength="40" list="lista-pessoas" enterkeyhint="done"' })}
+            <button class="btn btn-secundario" type="button" data-acao="add">Adicionar</button>
+          </div>
+          <datalist id="lista-pessoas">${sugestoes.map(p => `<option value="${esc(p.nome)}">`).join('')}</datalist>
+        </div>
+      </form>`,
+    ligar() {
+      const f = document.getElementById('f');
+      f.nome.addEventListener('input', () => { r.nome = f.nome.value; });
+      const adicionar = () => {
+        const n = normalizar(f.pessoa.value);
+        if (!n) return;
+        if (mesmoNome(n, nomeDe(eu())) || r.nomes.some(x => mesmoNome(x, n))) return mostrarErro(f, 'pessoa', 'Essa pessoa já está no grupo.');
+        r.nomes.push(n);
+        render();
+        document.querySelector('[name="pessoa"]').focus();
+      };
+      f.pessoa.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); adicionar(); } });
+      f.addEventListener('click', e => {
+        const t = e.target.closest('[data-tipo]');
+        if (t) { r.tipo = t.dataset.tipo; render(); return; }
+        const rm = e.target.closest('[data-remover]');
+        if (rm) { r.nomes.splice(Number(rm.dataset.remover), 1); render(); return; }
+        if (e.target.closest('[data-acao="add"]')) adicionar();
+      });
+      f.addEventListener('submit', e => {
+        e.preventDefault();
+        const nome = normalizar(f.nome.value);
+        if (!nome) return mostrarErro(f, 'nome', 'Dê um nome ao grupo.');
+        const pendente = normalizar(f.pessoa.value);
+        if (pendente && !r.nomes.some(x => mesmoNome(x, pendente)) && !mesmoNome(pendente, nomeDe(eu()))) r.nomes.push(pendente);
+        const id = novoId();
+        db.grupos[id] = {
+          id, nome, tipo: r.tipo, membros: [eu(), ...r.nomes.map(acharOuCriarPessoa)],
+          criadoEm: agora(), atualizadoEm: agora()
+        };
+        salvar();
+        rascunhoGrupo = null;
+        location.replace('#/grupo/' + id);
+      });
+    },
+    sair() { /* mantém rascunho enquanto a tela re-renderiza */ }
+  };
+}
+
+// 03 Grupo
+function itensDoGrupo(gid) {
+  const itens = [
+    ...gastosDo(gid).map(e => ({ tipo: 'gasto', data: e.data, criado: e.criadoEm, obj: e })),
+    ...acertosDo(gid).map(a => ({ tipo: 'acerto', data: a.data, criado: a.criadoEm, obj: a }))
+  ];
+  return itens.sort((a, b) => b.data.localeCompare(a.data) || b.criado.localeCompare(a.criado));
+}
+function htmlItemGasto(e) {
+  const [, m, d] = e.data.split('-');
+  const p = partes(e);
+  const minha = p[eu()] || 0;
+  let rot = '', val = '', cls = 'ter';
+  if (e.pagoPor === eu()) {
+    const emprestou = e.valorCentavos - minha;
+    if (emprestou > 0) { rot = 'você emprestou'; val = dinheiro(emprestou); cls = 'pos'; }
+    else { rot = 'só você'; }
+  } else if (minha > 0) { rot = 'você deve'; val = dinheiro(minha); cls = 'neg'; }
+  else { rot = 'não envolve você'; }
+  return `<a class="item item-gasto" href="#/gasto/${e.id}">
+    <span class="data"><span class="t-legenda sec">${MESES[Number(m) - 1]}</span><span class="dia">${d}</span></span>
+    <span class="item-textos"><span class="t-cg cortar">${esc(e.descricao)}</span><span class="t-legenda sec cortar">${esc(nomeCurto(e.pagoPor))} pagou ${dinheiro(e.valorCentavos)}</span></span>
+    <span class="valor ${cls}"><span class="t-legenda cortar" style="max-width:100%">${rot}</span>${val ? `<span class="t-corpo-forte">${val}</span>` : ''}</span>
+  </a>`;
+}
+function htmlItemAcerto(a) {
+  const [, m, d] = a.data.split('-');
+  return `<a class="item item-gasto" href="#/acerto/${a.id}">
+    <span class="data"><span class="t-legenda sec">${MESES[Number(m) - 1]}</span><span class="dia">${d}</span></span>
+    <span class="item-textos"><span class="t-cg cortar">${esc(nomeCurto(a.de))} pagou ${esc(a.para === eu() ? 'você' : nomeDe(a.para))}</span><span class="t-legenda sec">Acerto de contas</span></span>
+    <span class="valor"><span class="t-corpo-forte">${dinheiro(a.valorCentavos)}</span></span>
+  </a>`;
+}
+function frasesDivida(dividas) {
+  return dividas.map(d => {
+    if (d.para === eu()) return `<span class="t-cg">${esc(nomeDe(d.de))} te deve <strong class="pos">${dinheiro(d.valor)}</strong></span>`;
+    if (d.de === eu()) return `<span class="t-cg">Você deve <strong class="neg">${dinheiro(d.valor)}</strong> a ${esc(nomeDe(d.para))}</span>`;
+    return `<span class="t-corpo sec">${esc(nomeDe(d.de))} deve ${dinheiro(d.valor)} a ${esc(nomeDe(d.para))}</span>`;
+  }).join('');
+}
+function telaGrupo(gid) {
+  const g = db.grupos[gid];
+  if (!g) return telaNaoAchou();
+  const dividas = simplificar(saldosDoGrupo(gid));
+  dividas.sort((a, b) => ((b.de === eu() || b.para === eu()) - (a.de === eu() || a.para === eu())));
+  const itens = itensDoGrupo(gid);
+  const sozinho = g.membros.length < 2;
+  let corpo;
+  if (sozinho) {
+    corpo = `<div style="padding:16px"><div class="cartao centro">
+      <span class="t-cg-forte">Só você por aqui!</span>
+      <span class="t-corpo sec">Adicione quem vai dividir os gastos com você.</span>
+      <a class="btn btn-principal btn-bloco" href="#/grupo/${gid}/config">Adicionar membros</a>
+    </div></div>`;
+  } else {
+    corpo = `
+      <div class="resumo">
+        <div class="linhas">${dividas.length ? frasesDivida(dividas) : `<span class="t-cg">${itens.length ? 'Tudo quitado neste grupo' : 'Nenhum gasto ainda'}</span>`}</div>
+        ${dividas.length ? `<div><a class="pilula" href="#/acerto/novo?grupo=${gid}">${icone('acertar')}Acertar contas</a></div>` : ''}
+      </div>
+      ${itens.length ? itens.map(i => i.tipo === 'gasto' ? htmlItemGasto(i.obj) : htmlItemAcerto(i.obj)).join('')
+        : `<p class="t-corpo sec" style="padding:16px">Toque em “Adicionar gasto” para lançar o primeiro.</p>`}`;
+  }
+  return {
+    html: `
+      <div class="capa-grande" style="background:${tipoDe(g).cor}">
+        <div class="acoes">
+          <a class="btn-icone" href="#/" aria-label="Voltar">${icone('seta-voltar')}</a>
+          <a class="btn-icone" href="#/grupo/${gid}/config" aria-label="Configurações do grupo">${icone('engrenagem')}</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+          <h1 class="t-cabecalho m0">${esc(g.nome)}</h1>
+          <a class="pilula" href="#/grupo/${gid}/config">${icone('pessoas')}${g.membros.length} ${g.membros.length === 1 ? 'pessoa' : 'pessoas'}</a>
+        </div>
+      </div>
+      ${corpo}
+      ${sozinho ? '' : `<a class="btn btn-principal fab" href="#/gasto/novo?grupo=${gid}">${icone('mais')}Adicionar gasto</a>`}`,
+    menu: 'grupos'
+  };
+}
+
+// 04 Adicionar / editar gasto
+let rascunhoGasto = null;
+function telaGastoForm(gastoId, consulta) {
+  const editando = !!gastoId;
+  const existente = editando ? db.gastos[gastoId] : null;
+  if (editando && !existente) return telaNaoAchou();
+  const chave = editando ? 'e:' + gastoId : 'n:' + (consulta.get('grupo') || '');
+  if (!rascunhoGasto || rascunhoGasto.chave !== chave) {
+    const lista = grupos().filter(g => g.membros.length >= 2).sort((a, b) => ultimaAtividade(b).localeCompare(ultimaAtividade(a)));
+    const gid = editando ? existente.grupoId : (consulta.get('grupo') && db.grupos[consulta.get('grupo')] ? consulta.get('grupo') : (lista[0] && lista[0].id));
+    const g = db.grupos[gid];
+    rascunhoGasto = editando ? {
+      chave, grupoId: gid, descricao: existente.descricao, valor: centavosParaCampo(existente.valorCentavos),
+      pagoPor: existente.pagoPor, data: existente.data, divididoEntre: existente.divididoEntre.slice()
+    } : {
+      chave, grupoId: gid, descricao: '', valor: '', pagoPor: eu(), data: hojeISO(),
+      divididoEntre: g ? g.membros.slice() : []
+    };
+  }
+  const r = rascunhoGasto;
+  const g = db.grupos[r.grupoId];
+  const disponiveis = grupos().filter(x => x.membros.length >= 2);
+  if (!g) {
+    return {
+      html: `${barra({ voltar: '/', voltarIcone: 'fechar', titulo: 'Adicionar gasto' })}
+        <div style="padding:16px"><div class="cartao centro">
+          <span class="t-cg-forte">Precisa de um grupo com 2 pessoas</span>
+          <span class="t-corpo sec">Crie um grupo e adicione quem vai dividir com você.</span>
+          <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
+        </div></div>`
+    };
+  }
+  const centavos = lerDinheiro(r.valor);
+  const n = r.divididoEntre.length;
+  let previa = 'Escolha quem divide o gasto.';
+  if (n) {
+    if (isNaN(centavos) || centavos <= 0) previa = `Dividido igualmente entre ${n} ${n === 1 ? 'pessoa' : 'pessoas'}`;
+    else {
+      const p = partes({ valorCentavos: centavos, divididoEntre: r.divididoEntre, pagoPor: r.pagoPor });
+      const vals = Object.values(p);
+      const min = Math.min(...vals), max = Math.max(...vals);
+      previa = `Dividido igualmente entre ${n} ${n === 1 ? 'pessoa' : 'pessoas'}</span><span class="t-corpo sec">${min === max ? dinheiro(min) + ' para cada' : 'De ' + dinheiro(min) + ' a ' + dinheiro(max) + ' (o centavo que sobra fica com quem pagou)'}`;
+    }
+  }
+  const voltar = editando ? '/gasto/' + gastoId : (consulta.get('grupo') ? '/grupo/' + consulta.get('grupo') : '/');
+  return {
+    html: `
+      <form id="f" novalidate>
+        ${barra({ voltar, voltarIcone: 'fechar', titulo: editando ? 'Editar gasto' : 'Adicionar gasto', direita: `<button class="btn-icone" type="submit" aria-label="Salvar">${icone('check')}</button>` })}
+        <div class="conteudo">
+          ${editando ? `<div class="campo"><span class="campo-rotulo">Grupo</span><span class="t-cg" style="padding:8px 0">${esc(g.nome)}</span></div>` : `
+          <label class="campo"><span class="campo-rotulo">Grupo</span>
+            <select class="campo-entrada" name="grupo">${disponiveis.map(x => `<option value="${x.id}" ${x.id === g.id ? 'selected' : ''}>${esc(x.nome)}</option>`).join('')}</select>
+          </label>`}
+          ${campo({ rotulo: 'Descrição', nome: 'descricao', valor: r.descricao, placeholder: 'Ex.: Almoço', extra: `maxlength="60" ${editando ? '' : 'autofocus'}` })}
+          ${campo({ rotulo: 'Valor (R$)', nome: 'valor', valor: r.valor, placeholder: '0,00', classe: 'campo-valor', extra: 'inputmode="numeric" autocomplete="off"' })}
+          <label class="campo"><span class="campo-rotulo">Quem pagou</span>
+            <select class="campo-entrada" name="pagoPor">${g.membros.map(id => `<option value="${id}" ${id === r.pagoPor ? 'selected' : ''}>${esc(nomeCurto(id))}</option>`).join('')}</select>
+          </label>
+          ${campo({ rotulo: 'Data', nome: 'data', valor: r.data, tipo: 'date', extra: 'required' })}
+          <div class="campo">
+            <span class="campo-rotulo">Dividir entre</span>
+            <div class="chips">
+              ${g.membros.map(id => `<label class="check-pessoa"><input type="checkbox" name="entre" value="${id}" ${r.divididoEntre.includes(id) ? 'checked' : ''}><span class="pilula ${r.divididoEntre.includes(id) ? 'ativa' : ''}">${esc(nomeCurto(id))}</span></label>`).join('')}
+            </div>
+            <span class="campo-erro" data-erro="entre"></span>
+          </div>
+          <div class="cartao" id="previa"><span class="t-corpo-forte">${previa}</span></div>
+        </div>
+      </form>`,
+    ligar() {
+      const f = document.getElementById('f');
+      const atualizarPrevia = () => {
+        const tela = telaGastoForm(gastoId, consulta);
+        const tmp = document.createElement('div'); tmp.innerHTML = tela.html;
+        document.getElementById('previa').innerHTML = tmp.querySelector('#previa').innerHTML;
+      };
+      mascararDinheiro(f.valor);
+      f.descricao.addEventListener('input', () => { r.descricao = f.descricao.value; });
+      f.valor.addEventListener('input', () => { r.valor = f.valor.value; mostrarErro(f, 'valor', ''); atualizarPrevia(); });
+      f.data.addEventListener('change', () => { r.data = f.data.value; });
+      f.pagoPor.addEventListener('change', () => { r.pagoPor = f.pagoPor.value; atualizarPrevia(); });
+      if (f.grupo) f.grupo.addEventListener('change', () => {
+        const ng = db.grupos[f.grupo.value];
+        r.grupoId = ng.id; r.pagoPor = ng.membros.includes(eu()) ? eu() : ng.membros[0]; r.divididoEntre = ng.membros.slice();
+        render();
+      });
+      f.addEventListener('change', e => {
+        if (e.target.name !== 'entre') return;
+        r.divididoEntre = g.membros.filter(id => f.querySelector(`input[name="entre"][value="${id}"]`).checked);
+        e.target.nextElementSibling.classList.toggle('ativa', e.target.checked);
+        mostrarErro(f, 'entre', '');
+        atualizarPrevia();
+      });
+      f.addEventListener('submit', e => {
+        e.preventDefault();
+        let ok = true;
+        const descricao = normalizar(f.descricao.value);
+        const valor = lerDinheiro(f.valor.value);
+        if (!descricao) { mostrarErro(f, 'descricao', 'Escreva o que foi o gasto.'); ok = false; } else mostrarErro(f, 'descricao', '');
+        if (isNaN(valor) || valor <= 0) { mostrarErro(f, 'valor', 'Digite um valor, como 129,10.'); ok = false; }
+        if (!f.data.value) { mostrarErro(f, 'data', 'Escolha a data.'); ok = false; }
+        if (!r.divididoEntre.length) { mostrarErro(f, 'entre', 'Escolha ao menos uma pessoa.'); ok = false; }
+        if (!ok) return;
+        const dados = { grupoId: g.id, descricao, valorCentavos: valor, pagoPor: f.pagoPor.value, data: f.data.value, divididoEntre: r.divididoEntre.slice(), atualizadoEm: agora() };
+        let id = gastoId;
+        if (editando) Object.assign(db.gastos[id], dados);
+        else { id = novoId(); db.gastos[id] = { id, ...dados, criadoPor: eu(), criadoEm: agora() }; }
+        tocarGrupo(g.id);
+        salvar();
+        rascunhoGasto = null;
+        toast(editando ? 'Gasto atualizado' : 'Gasto adicionado');
+        location.replace('#/grupo/' + g.id);
+      });
+    }
+  };
+}
+
+// 05 Detalhe do gasto
+function telaGasto(id) {
+  const e = db.gastos[id];
+  if (!e) return telaNaoAchou();
+  const p = partes(e);
+  const editado = e.atualizadoEm && e.atualizadoEm.slice(0, 16) !== e.criadoEm.slice(0, 16);
+  return {
+    html: `
+      ${barra({ voltar: '/grupo/' + e.grupoId, titulo: 'Detalhe do gasto', direita: `<a class="btn-icone" href="#/gasto/${id}/editar" aria-label="Editar gasto">${icone('lapis')}</a>` })}
+      <div class="conteudo">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h2 class="t-titulo m0">${esc(e.descricao)}</h2>
+          <span class="t-destaque">${dinheiro(e.valorCentavos)}</span>
+          <span class="t-legenda sec">Gasto em ${dataBR(e.data)} · adicionado por ${esc(nomeDe(e.criadoPor))} em ${dataHoraBR(e.criadoEm)}${editado ? ' · editado em ' + dataHoraBR(e.atualizadoEm) : ''}</span>
+        </div>
+        <div class="campo" style="gap:8px">
+          <span class="campo-rotulo">Quem pagou</span>
+          <div style="display:flex;gap:12px;align-items:center"><span class="avatar">${esc(iniciaisNoGrupo(e.pagoPor, db.grupos[e.grupoId] ? db.grupos[e.grupoId].membros : [e.pagoPor]))}</span><span class="t-cg">${esc(nomeCurto(e.pagoPor))} pagou ${dinheiro(e.valorCentavos)}</span></div>
+        </div>
+        <div class="campo" style="gap:8px">
+          <span class="campo-rotulo">Quanto cada um deve</span>
+          ${e.divididoEntre.map(pid => `<div style="display:flex;gap:12px;align-items:center"><span class="avatar">${esc(iniciaisNoGrupo(pid, db.grupos[e.grupoId] ? db.grupos[e.grupoId].membros : e.divididoEntre))}</span><span class="t-cg" style="flex:1">${esc(nomeComVoce(pid))}</span><span class="t-corpo-forte">${dinheiro(p[pid])}</span></div>`).join('')}
+        </div>
+        <button class="btn btn-perigo btn-bloco" type="button" data-acao="apagar">${icone('lixeira')}Apagar gasto</button>
+      </div>`,
+    ligar() {
+      app.querySelector('[data-acao="apagar"]').addEventListener('click', async () => {
+        if (!await confirmar({ titulo: 'Apagar este gasto?', texto: `“${e.descricao}” sai do grupo e os saldos são refeitos.`, ok: 'Apagar', perigo: true })) return;
+        delete db.gastos[id];
+        tocarGrupo(e.grupoId);
+        salvar();
+        toast('Gasto apagado');
+        location.replace('#/grupo/' + e.grupoId);
+      });
+    }
+  };
+}
+
+// 06 Acertar contas (novo e edição)
+let rascunhoAcerto = null;
+function telaAcertoForm(acertoId, consulta) {
+  const editando = !!acertoId;
+  const existente = editando ? db.acertos[acertoId] : null;
+  if (editando && !existente) return telaNaoAchou();
+  const gid = editando ? existente.grupoId : consulta.get('grupo');
+  const g = db.grupos[gid];
+  if (!g) return telaNaoAchou();
+  const dividas = simplificar(saldosDoGrupo(gid));
+  const chave = editando ? 'e:' + acertoId : 'n:' + gid;
+  if (!rascunhoAcerto || rascunhoAcerto.chave !== chave) {
+    if (editando) rascunhoAcerto = { chave, de: existente.de, para: existente.para, valor: centavosParaCampo(existente.valorCentavos), data: existente.data };
+    else {
+      const d = dividas.find(x => x.de === eu() || x.para === eu()) || dividas[0];
+      rascunhoAcerto = d ? { chave, de: d.de, para: d.para, valor: centavosParaCampo(d.valor), data: hojeISO() }
+        : { chave, de: g.membros.find(id => id !== eu()) || eu(), para: eu(), valor: '', data: hojeISO() };
+    }
+  }
+  const r = rascunhoAcerto;
+  const opcoes = sel => g.membros.map(id => `<option value="${id}" ${id === sel ? 'selected' : ''}>${esc(nomeComVoce(id))}</option>`).join('');
+  return {
+    html: `
+      <form id="f" novalidate>
+        ${barra({ voltar: '/grupo/' + gid, voltarIcone: 'fechar', titulo: editando ? 'Editar acerto' : 'Acertar contas', direita: `<button class="btn-icone" type="submit" aria-label="Salvar">${icone('check')}</button>` })}
+        <div class="conteudo">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:8px">
+            <div style="display:flex;gap:16px;align-items:center">
+              <span class="avatar grande" id="av-de">${esc(iniciaisNoGrupo(r.de, g.membros))}</span>${icone('acertar')}<span class="avatar grande" id="av-para">${esc(iniciaisNoGrupo(r.para, g.membros))}</span>
+            </div>
+            <span class="t-cg-forte" id="frase">${esc(nomeDe(r.de))} pagou ${esc(nomeDe(r.para))}</span>
+          </div>
+          ${!editando && dividas.length > 1 ? `<div class="campo"><span class="campo-rotulo">Pendências do grupo</span><div class="chips">
+            ${dividas.map((d, i) => `<button type="button" class="pilula" data-divida="${i}">${esc(nomeCurto(d.de))} → ${esc(d.para === eu() ? 'você' : nomeDe(d.para))} · ${dinheiro(d.valor)}</button>`).join('')}
+          </div></div>` : ''}
+          <label class="campo"><span class="campo-rotulo">Quem pagou</span><select class="campo-entrada" name="de">${opcoes(r.de)}</select></label>
+          <label class="campo"><span class="campo-rotulo">Para quem</span><select class="campo-entrada" name="para">${opcoes(r.para)}</select><span class="campo-erro" data-erro="para"></span></label>
+          ${campo({ rotulo: 'Valor (R$)', nome: 'valor', valor: r.valor, placeholder: '0,00', classe: 'campo-valor', extra: 'inputmode="numeric" autocomplete="off"' })}
+          ${campo({ rotulo: 'Data', nome: 'data', valor: r.data, tipo: 'date' })}
+          <p class="nota m0" id="nota"></p>
+          ${editando ? `<button class="btn btn-perigo btn-bloco" type="button" data-acao="apagar">${icone('lixeira')}Apagar acerto</button>` : ''}
+        </div>
+      </form>`,
+    ligar() {
+      const f = document.getElementById('f');
+      mascararDinheiro(f.valor);
+      const atualizar = () => {
+        r.de = f.de.value; r.para = f.para.value; r.valor = f.valor.value; r.data = f.data.value;
+        document.getElementById('av-de').textContent = iniciaisNoGrupo(r.de, g.membros);
+        document.getElementById('av-para').textContent = iniciaisNoGrupo(r.para, g.membros);
+        document.getElementById('frase').textContent = `${nomeDe(r.de)} pagou ${nomeDe(r.para)}`;
+        const v = lerDinheiro(r.valor);
+        const pend = dividas.find(d => d.de === r.de && d.para === r.para);
+        const nota = document.getElementById('nota');
+        if (editando) nota.textContent = '';
+        else if (pend && v === pend.valor) nota.textContent = `Com esse pagamento, ${nomeDe(r.de)} e ${nomeDe(r.para)} ficam quitados.`;
+        else if (pend && v > 0 && v < pend.valor) nota.textContent = `Ainda vai faltar ${dinheiro(pend.valor - v)}.`;
+        else if (pend) nota.textContent = `Pendente: ${dinheiro(pend.valor)}.`;
+        else nota.textContent = 'Não há dívida pendente nessa direção. O pagamento vai gerar saldo ao contrário.';
+      };
+      atualizar();
+      f.addEventListener('input', () => { mostrarErro(f, 'valor', ''); mostrarErro(f, 'para', ''); atualizar(); });
+      f.addEventListener('click', async e => {
+        const b = e.target.closest('[data-divida]');
+        if (b) {
+          const d = dividas[Number(b.dataset.divida)];
+          f.de.value = d.de; f.para.value = d.para; f.valor.value = centavosParaCampo(d.valor);
+          atualizar(); return;
+        }
+        if (e.target.closest('[data-acao="apagar"]')) {
+          if (!await confirmar({ titulo: 'Apagar este acerto?', texto: 'Os saldos voltam a ser como antes do pagamento.', ok: 'Apagar', perigo: true })) return;
+          delete db.acertos[acertoId];
+          tocarGrupo(gid); salvar(); rascunhoAcerto = null;
+          toast('Acerto apagado');
+          location.replace('#/grupo/' + gid);
+        }
+      });
+      f.addEventListener('submit', e => {
+        e.preventDefault();
+        atualizar();
+        const v = lerDinheiro(r.valor);
+        let ok = true;
+        if (r.de === r.para) { mostrarErro(f, 'para', 'Escolha duas pessoas diferentes.'); ok = false; }
+        if (isNaN(v) || v <= 0) { mostrarErro(f, 'valor', 'Digite um valor, como 1.043,71.'); ok = false; }
+        if (!r.data) { mostrarErro(f, 'data', 'Escolha a data.'); ok = false; }
+        if (!ok) return;
+        const dados = { grupoId: gid, de: r.de, para: r.para, valorCentavos: v, data: r.data, atualizadoEm: agora() };
+        if (editando) Object.assign(db.acertos[acertoId], dados);
+        else { const id = novoId(); db.acertos[id] = { id, ...dados, criadoPor: eu(), criadoEm: agora() }; }
+        tocarGrupo(gid); salvar(); rascunhoAcerto = null;
+        toast(editando ? 'Acerto atualizado' : 'Pagamento registrado');
+        location.replace('#/grupo/' + gid);
+      });
+    }
+  };
+}
+
+// 07 Configurações do grupo
+function telaConfig(gid) {
+  const g = db.grupos[gid];
+  if (!g) return telaNaoAchou();
+  const saldo = saldosDoGrupo(gid);
+  const sugestoes = Object.values(db.pessoas).filter(p => !g.membros.includes(p.id));
+  const linhaMembro = id => {
+    const s = saldo[id] || 0;
+    const dir = s > 0 ? `<span class="t-legenda pos">recebe</span><span class="t-corpo-forte pos">${dinheiro(s)}</span>`
+      : s < 0 ? `<span class="t-legenda neg">deve</span><span class="t-corpo-forte neg">${dinheiro(-s)}</span>`
+        : `<span class="t-legenda ter">quitado</span>`;
+    return `<button type="button" class="item" data-membro="${id}" style="gap:12px">
+      <span class="avatar">${esc(iniciaisNoGrupo(id, g.membros))}</span>
+      <span class="t-cg cortar" style="flex:1">${esc(nomeComVoce(id))}</span>
+      <span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">${dir}</span>
+    </button>`;
+  };
+  return {
+    html: `
+      ${barra({ voltar: '/grupo/' + gid, titulo: 'Configurações do grupo' })}
+      <form id="f" class="conteudo" novalidate>
+        ${campo({ rotulo: 'Nome do grupo', nome: 'nome', valor: g.nome, extra: 'maxlength="40"' })}
+        <div class="campo">
+          <span class="campo-rotulo">Tipo</span>
+          <div class="seletores">
+            ${Object.entries(TIPOS).map(([k, t]) => `<button type="button" class="seletor" data-tipo="${k}" aria-pressed="${g.tipo === k}">${icone(t.icone)}${t.rotulo}</button>`).join('')}
+          </div>
+        </div>
+      </form>
+      <hr class="divisor">
+      <div class="secao-titulo">Membros · toque para editar o nome</div>
+      ${g.membros.map(linhaMembro).join('')}
+      <form id="f-add" class="linha-add" style="padding:8px 16px 0" novalidate>
+        ${campo({ rotulo: 'Adicionar pessoa', nome: 'pessoa', placeholder: 'Digite o nome', extra: 'maxlength="40" list="lista-pessoas" enterkeyhint="done"' })}
+        <button class="btn btn-secundario" type="submit">Adicionar</button>
+      </form>
+      <datalist id="lista-pessoas">${sugestoes.map(p => `<option value="${esc(p.nome)}">`).join('')}</datalist>
+      <p class="nota" style="padding:8px 16px">As dívidas são simplificadas automaticamente: o app mostra sempre o menor número de pagamentos entre as pessoas.</p>
+      <div style="padding:8px 16px 16px"><button class="btn btn-perigo btn-bloco" type="button" data-acao="apagar-grupo">${icone('lixeira')}Apagar grupo</button></div>`,
+    ligar() {
+      const f = document.getElementById('f');
+      f.addEventListener('submit', e => e.preventDefault());
+      f.nome.addEventListener('change', () => {
+        const nome = normalizar(f.nome.value);
+        if (!nome) { f.nome.value = g.nome; return mostrarErro(f, 'nome', 'O grupo precisa de um nome.'); }
+        mostrarErro(f, 'nome', '');
+        g.nome = nome; tocarGrupo(gid); salvar(); toast('Nome salvo');
+      });
+      f.addEventListener('click', e => {
+        const t = e.target.closest('[data-tipo]');
+        if (!t) return;
+        g.tipo = t.dataset.tipo; tocarGrupo(gid); salvar(); render(); toast('Tipo salvo');
+      });
+      const fa = document.getElementById('f-add');
+      fa.addEventListener('submit', e => {
+        e.preventDefault();
+        const n = normalizar(fa.pessoa.value);
+        if (!n) return;
+        if (g.membros.some(id => mesmoNome(nomeDe(id), n))) return mostrarErro(fa, 'pessoa', 'Essa pessoa já está no grupo.');
+        g.membros.push(acharOuCriarPessoa(n));
+        tocarGrupo(gid); salvar(); render(); toast(`${n} entrou no grupo`);
+        document.querySelector('#f-add [name="pessoa"]').focus();
+      });
+      app.addEventListener('click', e => {
+        const b = e.target.closest('[data-membro]');
+        if (b) return editarMembro(gid, b.dataset.membro);
+        if (e.target.closest('[data-acao="apagar-grupo"]')) apagarGrupo(gid);
+      });
+    }
+  };
+}
+function editarMembro(gid, pid) {
+  const g = db.grupos[gid];
+  const p = pessoa(pid);
+  const podeTirar = pid !== eu() && !pessoaTemMovimento(gid, pid);
+  const outrosGrupos = grupos().filter(x => x.id !== gid && x.membros.includes(pid)).length;
+  abrirSheet(`
+    <h2>${pid === eu() ? 'Seu nome' : 'Editar pessoa'}</h2>
+    <form id="f-membro" class="conteudo" style="padding:0" novalidate>
+      ${campo({ rotulo: 'Nome', nome: 'nome', valor: p.nome, extra: 'maxlength="40"' })}
+      ${outrosGrupos ? `<p class="nota m0">O nome muda também nos outros ${outrosGrupos} ${outrosGrupos === 1 ? 'grupo' : 'grupos'} dessa pessoa.</p>` : ''}
+      <div class="botoes">
+        <button class="btn btn-principal btn-bloco" type="submit">Salvar</button>
+        ${pid === eu() ? '' : podeTirar
+          ? `<button class="btn btn-perigo btn-bloco" type="button" data-acao="tirar">Tirar do grupo</button>`
+          : `<p class="nota m0">Para tirar essa pessoa do grupo, primeiro apague ou edite os gastos e acertos em que ela aparece.</p>`}
+        <button class="btn btn-secundario btn-bloco" type="button" data-acao="cancelar">Cancelar</button>
+      </div>
+    </form>`, (s, fechar) => {
+    const f = s.querySelector('#f-membro');
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const nome = normalizar(f.nome.value);
+      if (!nome) return mostrarErro(f, 'nome', 'Digite um nome.');
+      if (g.membros.some(id => id !== pid && mesmoNome(nomeDe(id), nome))) return mostrarErro(f, 'nome', 'Já tem alguém com esse nome no grupo.');
+      p.nome = nome; p.atualizadoEm = agora(); tocarGrupo(gid); salvar(); fechar(); render(); toast('Nome salvo');
+    });
+    s.addEventListener('click', e => {
+      if (e.target.closest('[data-acao="cancelar"]')) fechar();
+      if (e.target.closest('[data-acao="tirar"]')) {
+        g.membros = g.membros.filter(id => id !== pid);
+        tocarGrupo(gid); salvar(); fechar(); render(); toast(`${p.nome} saiu do grupo`);
+      }
+    });
+  });
+}
+async function apagarGrupo(gid) {
+  const g = db.grupos[gid];
+  const n = gastosDo(gid).length + acertosDo(gid).length;
+  if (!await confirmar({ titulo: `Apagar “${g.nome}”?`, texto: n ? `Os ${n} lançamentos do grupo também serão apagados. Não dá para desfazer.` : 'Não dá para desfazer.', ok: 'Apagar grupo', perigo: true })) return;
+  gastosDo(gid).forEach(e => delete db.gastos[e.id]);
+  acertosDo(gid).forEach(a => delete db.acertos[a.id]);
+  delete db.grupos[gid];
+  salvar();
+  toast('Grupo apagado');
+  location.replace('#/');
+}
+
+// 09 Amigos: todas as pessoas dos grupos, sem repetir, com o saldo somado de todos os grupos
+function telaAmigos() {
+  const resumo = {};
+  for (const g of grupos()) {
+    const s = saldosDoGrupo(g.id);
+    for (const id of g.membros) {
+      if (id === eu()) continue;
+      resumo[id] = resumo[id] || { saldo: 0, grupos: 0 };
+      resumo[id].saldo += s[id] || 0;
+      resumo[id].grupos += 1;
+    }
+  }
+  const ids = Object.keys(resumo).sort((a, b) => nomeDe(a).localeCompare(nomeDe(b), 'pt-BR'));
+  const linhas = ids.map(id => {
+    const { saldo, grupos: n } = resumo[id];
+    const dir = saldo > 0 ? `<span class="t-legenda pos">recebe</span><span class="t-corpo-forte pos">${dinheiro(saldo)}</span>`
+      : saldo < 0 ? `<span class="t-legenda neg">deve</span><span class="t-corpo-forte neg">${dinheiro(-saldo)}</span>`
+        : `<span class="t-legenda ter">quitado</span>`;
+    return `<div class="item" style="gap:12px;cursor:default">
+      <span class="avatar">${esc(iniciaisNoGrupo(id, ids))}</span>
+      <span class="item-textos"><span class="t-cg cortar">${esc(nomeDe(id))}</span><span class="t-legenda sec">${n === 1 ? 'em 1 grupo' : `em ${n} grupos`}</span></span>
+      <span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">${dir}</span>
+    </div>`;
+  }).join('');
+  return {
+    html: `
+      <div style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
+        <h1 class="t-cabecalho m0">Amigos</h1>
+        <p class="t-corpo sec m0">Pessoas que você adicionou nos grupos. O saldo de cada uma soma todos os grupos.</p>
+      </div>
+      ${ids.length ? linhas : `<div style="padding:16px"><div class="cartao centro">
+        <span class="t-cg-forte">Ninguém por aqui ainda</span>
+        <span class="t-corpo sec">As pessoas aparecem aqui quando você as adiciona em um grupo.</span>
+        <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
+      </div></div>`}`,
+    menu: 'amigos'
+  };
+}
+
+// 10 Conta
+function telaConta() {
+  return {
+    html: `
+      <div style="padding:24px 16px 8px"><h1 class="t-cabecalho m0">Conta</h1></div>
+      ${avisoArmazenamento()}
+      <form id="f" class="conteudo" style="gap:32px" novalidate>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="foto" aria-hidden="true">${icone('camera')}</div>
+          <span class="t-legenda ter">Adicionar foto · em breve</span>
+        </div>
+        ${campo({ rotulo: 'Seu nome', nome: 'nome', valor: nomeDe(eu()), extra: 'maxlength="40"' })}
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <span class="t-cg-forte">Levar para outro aparelho</span>
+          <span class="t-corpo sec">Gera um arquivo com todos os grupos e gastos. Use para abrir no PC ou guardar como cópia de segurança.</span>
+          <button class="btn btn-secundario btn-bloco" type="button" data-acao="exportar">Exportar dados</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <span class="t-cg-forte">Trazer de outro aparelho</span>
+          <span class="t-corpo sec">Abre um arquivo exportado. Os dados deste aparelho serão substituídos pelos do arquivo.</span>
+          <button class="btn btn-secundario btn-bloco" type="button" data-acao="importar">Importar dados</button>
+        </div>
+        <p class="nota m0">Tudo fica salvo só neste aparelho. Limpar os dados do navegador apaga os grupos, então exporte de vez em quando.</p>
+      </form>`,
+    ligar() {
+      const f = document.getElementById('f');
+      f.addEventListener('submit', e => e.preventDefault());
+      f.nome.addEventListener('change', () => {
+        const nome = normalizar(f.nome.value);
+        if (!nome) { f.nome.value = nomeDe(eu()); return mostrarErro(f, 'nome', 'Digite seu nome.'); }
+        mostrarErro(f, 'nome', '');
+        pessoa(eu()).nome = nome; pessoa(eu()).atualizadoEm = agora(); salvar(); toast('Nome salvo');
+      });
+      f.querySelector('[data-acao="exportar"]').addEventListener('click', exportar);
+    },
+    menu: 'conta'
+  };
+}
+function exportar() {
+  const conteudo = JSON.stringify({ ...db, exportadoEm: agora() }, null, 2);
+  const blob = new Blob([conteudo], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `divide-dados-${hojeISO()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('Arquivo exportado');
+}
+const entradaArquivo = document.getElementById('arquivo-importar');
+entradaArquivo.addEventListener('change', async () => {
+  const arq = entradaArquivo.files[0];
+  entradaArquivo.value = '';
+  if (!arq) return;
+  let novo;
+  try { novo = JSON.parse(await arq.text()); } catch (e) { return toast('Esse arquivo não é um backup válido'); }
+  if (!validarDados(novo)) return toast('Esse arquivo não é um backup do Divide');
+  const n = Object.keys(novo.grupos).length;
+  const temDados = Object.keys(db.grupos).length > 0;
+  if (temDados && !await confirmar({ titulo: 'Substituir os dados deste aparelho?', texto: `O arquivo tem ${n} ${n === 1 ? 'grupo' : 'grupos'}. Tudo o que está neste aparelho será trocado pelo conteúdo dele.`, ok: 'Substituir', perigo: true })) return;
+  delete novo.exportadoEm;
+  db = novo;
+  salvar();
+  toast('Dados importados');
+  location.replace(db.euId && db.pessoas[db.euId] ? '#/' : '#/bemvindo');
+  render();
+});
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-acao="importar"]')) entradaArquivo.click();
+});
+
+function telaNaoAchou() {
+  return { html: `${barra({ voltar: '/', titulo: 'Não encontrado' })}<p class="t-corpo sec" style="padding:16px">Esse item não existe mais. Ele pode ter sido apagado.</p>` };
+}
+
+/* ================= Roteador ================= */
+function rotear() {
+  const bruto = location.hash.slice(1) || '/';
+  const [caminho, qs] = bruto.split('?');
+  const consulta = new URLSearchParams(qs || '');
+  const p = caminho.split('/').filter(Boolean);
+  if (!db.euId || !db.pessoas[db.euId]) return telaBemvindo();
+  if (!p.length) return telaInicio();
+  if (p[0] === 'bemvindo') return telaInicio();
+  if (p[0] === 'conta' || p[0] === 'dados') return telaConta();
+  if (p[0] === 'amigos') return telaAmigos();
+  if (p[0] === 'grupo' && p[1] === 'novo') return telaCriarGrupo();
+  if (p[0] === 'grupo' && p[2] === 'config') return telaConfig(p[1]);
+  if (p[0] === 'grupo') return telaGrupo(p[1]);
+  if (p[0] === 'gasto' && p[1] === 'novo') return telaGastoForm(null, consulta);
+  if (p[0] === 'gasto' && p[2] === 'editar') return telaGastoForm(p[1], consulta);
+  if (p[0] === 'gasto') return telaGasto(p[1]);
+  if (p[0] === 'acerto' && p[1] === 'novo') return telaAcertoForm(null, consulta);
+  if (p[0] === 'acerto') return telaAcertoForm(p[1], consulta);
+  return telaNaoAchou();
+}
+let rotaAnterior = null;
+function render() {
+  const rotaAtual = location.hash;
+  if (rotaAtual !== rotaAnterior) {
+    // Saiu da tela: descarta rascunhos que não pertencem a ela.
+    if (!rotaAtual.startsWith('#/grupo/novo')) rascunhoGrupo = null;
+    if (!rotaAtual.startsWith('#/gasto/novo') && !/#\/gasto\/[^/]+\/editar/.test(rotaAtual)) rascunhoGasto = null;
+    if (!rotaAtual.startsWith('#/acerto/')) rascunhoAcerto = null;
+  }
+  const tela = rotear();
+  // Troca o contêiner para não acumular ouvintes de eventos entre renderizações.
+  const novoApp = app.cloneNode(false);
+  app.replaceWith(novoApp);
+  app = novoApp;
+  app.innerHTML = tela.html + (tela.menu ? menuInferior(tela.menu) : '');
+  document.body.classList.toggle('com-menu', !!tela.menu);
+  tela.ligar && tela.ligar();
+  if (rotaAtual !== rotaAnterior) window.scrollTo(0, 0);
+  rotaAnterior = rotaAtual;
+  const foco = app.querySelector('[autofocus]');
+  if (foco && matchMedia('(pointer:fine)').matches) foco.focus();
+}
+window.addEventListener('hashchange', () => { document.querySelectorAll('.fundo-sheet').forEach(s => s.remove()); render(); });
+window.addEventListener('storage', e => { if (e.key === CHAVE) { db = carregar(); render(); } });
+render();
+
+// Funciona offline e pode virar atalho na tela inicial (só em https ou localhost).
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
