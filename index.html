@@ -1326,14 +1326,11 @@ function telaAmigos() {
   }).join('');
   return {
     html: `
-      <div style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
-        <h1 class="t-cabecalho m0">Amigos</h1>
-        <p class="t-corpo sec m0">Pessoas que você adicionou nos grupos. O saldo de cada uma soma todos os grupos.</p>
-      </div>
+      <div style="padding:24px 16px 8px"><h1 class="t-cabecalho m0">Amigos</h1></div>
       ${ids.length ? linhas : `<div style="padding:16px"><div class="cartao centro">
         ${icone('pessoa')}
         <span class="t-cg-forte">Ninguém por aqui ainda</span>
-        <span class="t-corpo sec">As pessoas aparecem aqui quando você as adiciona em um grupo.</span>
+        <span class="t-corpo sec">As pessoas que você adiciona nos grupos aparecem aqui, com o saldo de todos os grupos somado.</span>
         <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
       </div></div>`}`,
     menu: 'amigos'
