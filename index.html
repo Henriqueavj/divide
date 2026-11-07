@@ -1296,6 +1296,7 @@ function telaAmigos() {
 }
 
 // 10 Conta
+function temaEscolhido() { try { return localStorage.getItem('tema') || 'auto'; } catch (e) { return 'auto'; } }
 function telaConta() {
   return {
     html: `
@@ -1307,6 +1308,13 @@ function telaConta() {
           <span class="t-legenda ter">Adicionar foto · em breve</span>
         </div>
         ${campo({ rotulo: 'Seu nome', nome: 'nome', valor: nomeDe(eu()), extra: 'maxlength="40"' })}
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <span class="t-cg-forte" id="tema-rotulo">Aparência</span>
+          <div role="radiogroup" aria-labelledby="tema-rotulo" style="display:flex;flex-wrap:wrap;gap:8px">
+            ${[['auto', 'Automático'], ['claro', 'Claro'], ['escuro', 'Escuro']].map(([v, r]) => `<button type="button" class="pilula ${temaEscolhido() === v ? 'ativa' : ''}" role="radio" aria-checked="${temaEscolhido() === v}" data-escolha-tema="${v}">${r}</button>`).join('')}
+          </div>
+          <span class="t-corpo sec">Automático segue o modo claro ou escuro do celular.</span>
+        </div>
         <div style="display:flex;flex-direction:column;gap:12px">
           <span class="t-cg-forte">Levar para outro aparelho</span>
           <span class="t-corpo sec">Gera um arquivo com todos os grupos e gastos. Use para abrir no PC ou guardar como cópia de segurança.</span>
@@ -1328,6 +1336,12 @@ function telaConta() {
         mostrarErro(f, 'nome', '');
         pessoa(eu()).nome = nome; pessoa(eu()).atualizadoEm = agora(); salvar(); toast('Nome salvo');
       });
+      f.querySelectorAll('[data-escolha-tema]').forEach(bt => bt.addEventListener('click', () => {
+        const v = bt.dataset.escolhaTema;
+        try { if (v === 'auto') localStorage.removeItem('tema'); else localStorage.setItem('tema', v); } catch (e) {}
+        window.aplicarTema();
+        f.querySelectorAll('[data-escolha-tema]').forEach(o => { const sim = o === bt; o.classList.toggle('ativa', sim); o.setAttribute('aria-checked', String(sim)); });
+      }));
       f.querySelector('[data-acao="exportar"]').addEventListener('click', exportar);
     },
     menu: 'conta'
