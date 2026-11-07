@@ -95,6 +95,8 @@
   /* ---------- Semânticos: fundos e bordas ---------- */
   --cor-fundo-pagina: var(--neutro-0);
   --cor-fundo-superficie: var(--neutro-50);
+  --cor-fundo-card: var(--neutro-0);         /* cards sobre o fundo cinza (Início e tela do grupo) */
+  --cor-fundo-grupo: var(--neutro-50);       /* fundo abaixo da capa na tela do grupo */
   --cor-fundo-destaque: var(--neutro-100);
   --cor-borda-padrao: var(--neutro-200);
   --cor-borda-forte: var(--neutro-400);
@@ -203,6 +205,8 @@
 
   --cor-fundo-pagina: var(--noite-950);
   --cor-fundo-superficie: var(--noite-900);
+  --cor-fundo-card: var(--noite-900);
+  --cor-fundo-grupo: var(--noite-950);
   --cor-fundo-destaque: var(--noite-850);
   --cor-borda-padrao: var(--noite-800);
   --cor-borda-forte: var(--noite-700);

@@ -172,12 +172,10 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .cartao.centro { align-items: center; text-align: center; padding: var(--espaco-lg); gap: var(--espaco-md); }
 /* Cards brancos com sombra suave. No Início cada grupo é um card; dentro do grupo o fundo fica cinza claro
    e o resumo e a lista de gastos viram cards. No escuro o card é a superfície e o fundo continua o da página. */
-:root { --cor-card: var(--neutro-0); --cor-fundo-grupo: var(--neutro-50); }
-:root[data-tema="escuro"] { --cor-card: var(--cor-fundo-superficie); --cor-fundo-grupo: var(--cor-fundo-pagina); }
 .lista-cards { display: flex; flex-direction: column; gap: var(--espaco-sm); padding: 4px var(--espaco-md) var(--espaco-md); }
-.lista-cards .item { background: var(--cor-card); border-radius: var(--raio-lg); box-shadow: var(--sombra-suave); }
+.lista-cards .item { background: var(--cor-fundo-card); border-radius: var(--raio-lg); box-shadow: var(--sombra-suave); }
 #app.fundo-cinza { background: var(--cor-fundo-grupo); }
-.fundo-cinza .cartao, .fundo-cinza .resumo-total, .card-lista { background: var(--cor-card); box-shadow: var(--sombra-suave); }
+.fundo-cinza .cartao, .fundo-cinza .resumo-total, .card-lista { background: var(--cor-fundo-card); box-shadow: var(--sombra-suave); }
 .card-lista { margin: 0 var(--espaco-md) var(--espaco-md); border-radius: var(--raio-lg); overflow: hidden; }
 /* Rótulo pequeno acima do nome do grupo (VIAGEM, CASA...) */
 .grade-partes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--espaco-md); }
