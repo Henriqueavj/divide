@@ -233,7 +233,10 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
   position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 480px; overflow: hidden; pointer-events: none; z-index: -1;
 }
-.ondas-fab svg { position: absolute; width: 520px; height: 520px; right: -216px; bottom: calc(env(safe-area-inset-bottom) - 155px); }
+.ondas-fab .ondas { position: absolute; width: 520px; height: 520px; right: -216px; bottom: calc(env(safe-area-inset-bottom) - 155px); }
+/* Os anéis do botão flutuante são elementos HTML (não círculos de SVG): assim o navegador anima a escala
+   na placa de vídeo, liso, sem "degraus" de pixel na respiração lenta. */
+.ondas-fab .anel { position: absolute; border: 1.5px solid var(--cor-acao-principal); border-radius: 50%; will-change: transform, scale; }
 .resumo { padding: var(--espaco-md) var(--espaco-md) var(--espaco-xs); display: flex; flex-direction: column; gap: var(--espaco-sm); }
 .resumo .linhas { display: flex; flex-direction: column; gap: 2px; }
 
@@ -348,6 +351,9 @@ body.com-menu .fabs { bottom: calc(80px + env(safe-area-inset-bottom)); }
 #app[data-entrada="desce"] { --dur: var(--duracao-curta); --curva: var(--curva-padrao); }
 #app[data-entrada] .anima { animation: tela-entra var(--dur) var(--curva) backwards; animation-delay: calc(var(--i, 0) * var(--duracao-escalonamento)); }
 #app[data-entrada] .anima-fade { animation: aparece var(--dur) var(--curva) backwards; animation-delay: calc(var(--i, 0) * var(--duracao-escalonamento)); }
+/* A animação fica parada no 1º quadro até a tela nova estar desenhada (classe "pronto", posta pelo JS).
+   Sem isso, no celular o desenho da tela come o começo da animação e só os quadros finais aparecem. */
+#app[data-entrada]:not(.pronto) .anima, #app[data-entrada]:not(.pronto) .anima-fade { animation-play-state: paused; }
 
 /* Folha de baixo: sobe e o fundo escurece junto; fecha mais rápido. */
 .fundo-sheet { animation: aparece var(--duracao-media) var(--curva-entrada); }
@@ -378,24 +384,24 @@ body.com-menu .fabs { bottom: calc(80px + env(safe-area-inset-bottom)); }
 /* Ondas. Tocar no botão flutuante: cada anel cresce e volta, de dentro para fora.
    Tela vazia (0 ou 1 grupo): respiração lenta e defasada. O pulso usa transform e a respiração usa scale,
    então os dois somam sem a respiração recomeçar. */
-.ondas circle { transform-box: fill-box; transform-origin: center; }
-.ondas circle:nth-child(2) { --n: 1; } .ondas circle:nth-child(3) { --n: 2; }
-.ondas circle:nth-child(4) { --n: 3; } .ondas circle:nth-child(5) { --n: 4; }
+.ondas > * { transform-box: fill-box; transform-origin: center; }
+.ondas > *:nth-child(2) { --n: 1; } .ondas > *:nth-child(3) { --n: 2; }
+.ondas > *:nth-child(4) { --n: 3; } .ondas > *:nth-child(5) { --n: 4; }
 @keyframes onda-pulso { 50% { transform: scale(var(--movimento-escala-onda)); } }
 @keyframes onda-respira { 50% { scale: var(--movimento-escala-respiracao); } }
-.ondas.pulso circle { animation: onda-pulso var(--duracao-destaque) var(--curva-padrao); animation-delay: calc(var(--n, 0) * var(--duracao-escalonamento)); }
-.ondas-fab.respira circle { animation: onda-respira var(--duracao-respiracao) ease-in-out infinite; animation-delay: calc(var(--n, 0) * var(--duracao-respiracao) / -12); }
-.ondas-fab.respira .ondas.pulso circle {
+.ondas.pulso > * { animation: onda-pulso var(--duracao-destaque) var(--curva-padrao); animation-delay: calc(var(--n, 0) * var(--duracao-escalonamento)); }
+.ondas-fab.respira .ondas > * { animation: onda-respira var(--duracao-respiracao) ease-in-out infinite; animation-delay: calc(var(--n, 0) * var(--duracao-respiracao) / -12); }
+.ondas-fab.respira .ondas.pulso > * {
   animation: onda-respira var(--duracao-respiracao) ease-in-out infinite, onda-pulso var(--duracao-destaque) var(--curva-padrao);
   animation-delay: calc(var(--n, 0) * var(--duracao-respiracao) / -12), calc(var(--n, 0) * var(--duracao-escalonamento));
 }
 /* "Tudo acertado": único momento expressivo. O selo entra com a curva de destaque e as ondas da capa pulsam uma vez. */
 @keyframes selo-entra { from { opacity: 0; transform: scale(.6); } }
 .selo.festeja { animation: selo-entra var(--duracao-destaque) var(--curva-destaque) var(--duracao-media) backwards; }
-.capa-grande .ondas.pulso circle { animation-delay: calc(var(--duracao-media) + var(--n, 0) * var(--duracao-escalonamento)); }
+.capa-grande .ondas.pulso > * { animation-delay: calc(var(--duracao-media) + var(--n, 0) * var(--duracao-escalonamento)); }
 
 @media (prefers-reduced-motion: reduce) {
-  .ondas circle, .ondas.pulso circle, .ondas-fab.respira circle, .ondas-fab.respira .ondas.pulso circle { animation: none; }
+  .ondas > *, .ondas.pulso > *, .ondas-fab.respira .ondas > *, .ondas-fab.respira .ondas.pulso > * { animation: none; }
   .fundo-sheet .sheet, .fundo-sheet.saindo .sheet { animation: none; }
   .selo.festeja { animation-name: aparece; }
 }
@@ -610,10 +616,10 @@ const ONDAS = `<svg class="ondas" viewBox="0 0 260 260" aria-hidden="true">
   <circle cx="130" cy="130" r="88" stroke-opacity=".10"/><circle cx="130" cy="130" r="120" stroke-opacity=".06"/></svg>`;
 // Versão maior, com um anel a mais, que sai de trás do botão flutuante da tela inicial.
 // Com 0 ou 1 grupo a tela fica vazia e as ondas "respiram" devagar.
-const ondasFab = respira => `<div class="ondas-fab${respira ? ' respira' : ''}" aria-hidden="true"><svg class="ondas" viewBox="0 0 520 520">
-  <circle cx="260" cy="260" r="40" stroke-opacity=".22"/><circle cx="260" cy="260" r="80" stroke-opacity=".15"/>
-  <circle cx="260" cy="260" r="125" stroke-opacity=".10"/><circle cx="260" cy="260" r="175" stroke-opacity=".06"/>
-  <circle cx="260" cy="260" r="230" stroke-opacity=".04"/></svg></div>`;
+// Anéis: [raio, opacidade], centrados num quadro de 520px (mesmo desenho do componente Ondas/Botão flutuante).
+const ANEIS_FAB = [[40, .22], [80, .15], [125, .10], [175, .06], [230, .04]];
+const ondasFab = respira => `<div class="ondas-fab${respira ? ' respira' : ''}" aria-hidden="true"><div class="ondas">${
+  ANEIS_FAB.map(([r, o]) => `<span class="anel" style="left:${260 - r}px;top:${260 - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${o}"></span>`).join('')}</div></div>`;
 
 /* ================= Consultas ================= */
 const eu = () => db.euId;
@@ -768,22 +774,29 @@ function tipoEntrada(de, para) {
 // Dá a cada parte da tela a sua vez de entrar. Cascata só quando a tela abre "para frente";
 // voltar e trocar de aba não repetem a cascata.
 function coreografar(tipo) {
+  app.classList.remove('pronto');
   app.dataset.entrada = tipo;
   const cascata = tipo === 'inicio' || tipo === 'avanca' || tipo === 'sobe';
   const marca = (el, cls, i) => { el.classList.add(cls); el.style.setProperty('--i', cascata ? i : 0); };
+  // Só anima o que aparece na tela (a tela abre no topo). O resto já nasce no lugar: menos trabalho para o celular.
+  const visivel = el => el.getBoundingClientRect().top + window.scrollY < window.innerHeight;
   let i = 0;
   for (const el of [...app.children]) {
     if (el.matches('.menu')) continue;
+    if (!el.matches('.fabs, .ondas-fab') && !visivel(el)) continue;
     if (el.matches('.ondas-fab')) { marca(el, 'anima-fade', 0); continue; }
     if (el.matches('.lista-cards, .card-lista')) {
       if (el.matches('.card-lista')) marca(el, 'anima-fade', i);
-      const itens = [...el.children];
+      const itens = [...el.children].filter(visivel);
       itens.forEach((it, k) => marca(it, 'anima', i + Math.min(k, 4)));
       i += Math.min(itens.length, 5);
       continue;
     }
     marca(el, 'anima', i++);
   }
+  // Solta a animação só depois que a tela nova foi desenhada (2 quadros).
+  const este = app;
+  requestAnimationFrame(() => requestAnimationFrame(() => este.classList.add('pronto')));
 }
 // Ondas do botão flutuante: os anéis existentes crescem e voltam, de dentro para fora.
 function pulsarOndas() {
