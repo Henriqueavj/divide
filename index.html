@@ -170,6 +170,21 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .divisor { height: 1px; background: var(--cor-borda-padrao); margin: 0; border: 0; }
 .cartao { background: var(--cor-fundo-superficie); border-radius: var(--raio-lg); padding: var(--espaco-md); display: flex; flex-direction: column; gap: var(--espaco-xxs); }
 .cartao.centro { align-items: center; text-align: center; padding: var(--espaco-lg); gap: var(--espaco-md); }
+/* Cards brancos com sombra suave. No Início cada grupo é um card; dentro do grupo o fundo fica cinza claro
+   e o resumo e a lista de gastos viram cards. No escuro o card é a superfície e o fundo continua o da página. */
+:root { --cor-card: var(--neutro-0); --cor-fundo-grupo: var(--neutro-50); }
+:root[data-tema="escuro"] { --cor-card: var(--cor-fundo-superficie); --cor-fundo-grupo: var(--cor-fundo-pagina); }
+.lista-cards { display: flex; flex-direction: column; gap: var(--espaco-sm); padding: 4px var(--espaco-md) var(--espaco-md); }
+.lista-cards .item { background: var(--cor-card); border-radius: var(--raio-lg); box-shadow: var(--sombra-suave); }
+#app.fundo-cinza { background: var(--cor-fundo-grupo); }
+.fundo-cinza .cartao, .fundo-cinza .resumo-total, .card-lista { background: var(--cor-card); box-shadow: var(--sombra-suave); }
+.card-lista { margin: 0 var(--espaco-md) var(--espaco-md); border-radius: var(--raio-lg); overflow: hidden; }
+/* Rótulo pequeno acima do nome do grupo (VIAGEM, CASA...) */
+.grade-partes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--espaco-md); }
+.grade-partes .campo { min-width: 0; }
+.grade-partes .campo-entrada { width: 100%; min-width: 0; }
+.grade-partes .campo-rotulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rotulo-capa { font-size: var(--texto-legenda); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--cor-texto-secundario); }
 .nota { font-size: var(--texto-legenda); color: var(--cor-texto-secundario); }
 /* Atividade: o que foi apagado aparece riscado e em cinza */
 .riscado { text-decoration: line-through; color: var(--cor-texto-secundario); }
@@ -333,7 +348,7 @@ function carregar() {
    Dados de antes do histórico existir (ou de arquivos antigos importados) ganham eventos montados
    a partir das datas de criação e edição. Apagados antigos não dá para recuperar. */
 const MAX_EVENTOS = 1000;
-const copiaGasto = e => ({ alvoId: e.id, descricao: e.descricao, valorCentavos: e.valorCentavos, pagoPor: e.pagoPor, divididoEntre: e.divididoEntre.slice() });
+const copiaGasto = e => ({ alvoId: e.id, descricao: e.descricao, valorCentavos: e.valorCentavos, pagoPor: e.pagoPor, divididoEntre: e.divididoEntre.slice(), ...(e.divisao ? { divisao: JSON.parse(JSON.stringify(e.divisao)) } : {}) });
 const copiaAcerto = a => ({ alvoId: a.id, de: a.de, para: a.para, valorCentavos: a.valorCentavos });
 const mudouDepois = o => o.atualizadoEm && o.criadoEm && o.atualizadoEm.slice(0, 16) !== o.criadoEm.slice(0, 16);
 function garantirEventos(d) {
@@ -382,6 +397,15 @@ function lerDinheiro(s) {
 }
 const comPontos = inteiro => inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const centavosParaCampo = c => { const [i, d] = (c / 100).toFixed(2).split('.'); return comPontos(i) + ',' + d; };
+// Porcentagem em centésimos (33,5% → 3350). Campo vazio conta como zero; texto inválido dá NaN.
+function lerPct(s) {
+  s = String(s == null ? '' : s).replace(/[%\s]/g, '');
+  if (!s) return 0;
+  if (!/^\d{1,3}([.,]\d{0,2})?$/.test(s)) return NaN;
+  const v = Math.round(Number(s.replace(',', '.')) * 100);
+  return v <= 10000 ? v : NaN;
+}
+const pctTexto = c => (c / 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '%';
 
 /* Máscara de valor estilo calculadora (como no Nubank): o campo começa em "0,00" e cada
    número digitado entra pela direita: 1 → 0,01 → 12 → 0,12 → 129 → 1,29 → 12910 → 129,10.
@@ -520,17 +544,31 @@ const grupos = () => Object.values(db.grupos);
 /* ================= Cálculos ================= */
 // Divide o valor em partes iguais. Os centavos que sobram vão primeiro para quem pagou,
 // depois para os outros participantes na ordem do grupo.
+// Divisão desigual: gasto.divisao = { modo: 'valores', valores: {id: centavos} }
+// ou { modo: 'porcentagem', pct: {id: centésimos de %} } (10000 = 100%).
+// Na porcentagem, os centavos que sobram do arredondamento seguem a mesma regra da divisão igual.
 function partes(gasto) {
   const ids = gasto.divididoEntre.slice();
   const n = ids.length;
   const out = {};
   if (!n) return out;
+  const d = gasto.divisao;
+  if (d && d.modo === 'valores') { for (const id of ids) out[id] = (d.valores && d.valores[id]) || 0; return out; }
+  if (d && d.modo === 'porcentagem') {
+    let soma = 0;
+    for (const id of ids) { out[id] = Math.floor(gasto.valorCentavos * ((d.pct && d.pct[id]) || 0) / 10000); soma += out[id]; }
+    let resto = gasto.valorCentavos - soma;
+    const ordem = ids.includes(gasto.pagoPor) ? [gasto.pagoPor, ...ids.filter(i => i !== gasto.pagoPor)] : ids;
+    for (let i = 0; resto > 0 && i < ordem.length * 2; i++) { out[ordem[i % ordem.length]]++; resto--; }
+    return out;
+  }
   const base = Math.floor(gasto.valorCentavos / n);
   let resto = gasto.valorCentavos - base * n;
   const ordem = ids.includes(gasto.pagoPor) ? [gasto.pagoPor, ...ids.filter(i => i !== gasto.pagoPor)] : ids;
   for (const id of ordem) { out[id] = base + (resto > 0 ? 1 : 0); if (resto > 0) resto--; }
   return out;
 }
+const SOBRA_CENTAVOS = 5;
 // Saldo de cada pessoa no grupo: positivo = tem a receber, negativo = deve.
 function saldosDoGrupo(gid) {
   const g = db.grupos[gid];
@@ -545,6 +583,8 @@ function saldosDoGrupo(gid) {
     saldo[a.de] = (saldo[a.de] || 0) + a.valorCentavos;
     saldo[a.para] = (saldo[a.para] || 0) - a.valorCentavos;
   }
+  // Sobra de poucos centavos (arredondamento, ou acerto feito com a conta de outro app) conta como acertado.
+  if (Object.values(saldo).every(v => Math.abs(v) <= SOBRA_CENTAVOS)) for (const id in saldo) saldo[id] = 0;
   return saldo;
 }
 // Simplificação: quem mais deve paga para quem mais tem a receber, até zerar.
@@ -588,6 +628,15 @@ function acharOuCriarPessoa(nome) {
   const id = novoId();
   db.pessoas[id] = { id, nome, criadoEm: agora(), atualizadoEm: agora() };
   return id;
+}
+// Contato (e-mail ou WhatsApp) é opcional e por enquanto só fica guardado: servirá para convidar quando houver sincronização.
+const AVISO_CONTATO = 'Ainda não enviamos convites. O contato fica guardado no app e, quando der para sincronizar entre celulares, você poderá chamar a pessoa por ele.';
+function guardarContato(pid, valor) {
+  const c = normalizar(valor);
+  const p = db.pessoas[pid];
+  if (!p || pid === eu() || (p.contato || '') === c) return;
+  if (c) p.contato = c; else delete p.contato;
+  p.atualizadoEm = agora();
 }
 function tocarGrupo(gid) { if (db.grupos[gid]) db.grupos[gid].atualizadoEm = agora(); }
 
@@ -723,7 +772,7 @@ function telaInicio() {
         </div>
         <div style="display:flex;flex-direction:column;gap:4px">${saldoGeral}</div>
       </div>
-      ${itens}
+      <div class="lista-cards">${itens}</div>
       ${ONDAS_FAB}
       <div class="fabs"><a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a></div>` : `
       <div style="padding:24px 16px 8px"><h1 class="t-cabecalho m0">Grupos</h1></div>
@@ -871,7 +920,7 @@ function telaGrupo(gid) {
         <div class="linhas">${dividas.length ? frasesDivida(dividas) : `<span class="t-cg">${itens.length ? 'Tudo acertado neste grupo' : 'Nenhum gasto ainda'}</span>`}</div>
         ${htmlResumoTotal(g, dividas)}
       </div>
-      ${itens.length ? itens.map(i => i.tipo === 'gasto' ? htmlItemGasto(i.obj) : htmlItemAcerto(i.obj)).join('')
+      ${itens.length ? `<div class="card-lista">${itens.map(i => i.tipo === 'gasto' ? htmlItemGasto(i.obj) : htmlItemAcerto(i.obj)).join('')}</div>`
         : `<p class="t-corpo sec" style="padding:16px">Toque em “Adicionar gasto” para lançar o primeiro.</p>`}`;
   }
   return {
@@ -883,7 +932,10 @@ function telaGrupo(gid) {
           <a class="btn-icone" href="#/grupo/${gid}/config" aria-label="Configurações do grupo">${icone('engrenagem')}</a>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
-          <h1 class="t-cabecalho m0">${esc(g.nome)}</h1>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span class="rotulo-capa">${tipoDe(g).rotulo}</span>
+            <h1 class="t-cabecalho m0">${esc(g.nome)}</h1>
+          </div>
           <a class="pilula" href="#/grupo/${gid}/config">${icone('pessoas')}${g.membros.length} ${g.membros.length === 1 ? 'pessoa' : 'pessoas'}</a>
         </div>
       </div>
@@ -893,6 +945,7 @@ function telaGrupo(gid) {
         <a class="btn btn-principal fab" href="#/gasto/novo?grupo=${gid}">${icone('mais')}Adicionar gasto</a>
       </div>`}`,
     menu: 'grupos',
+    fundoCinza: true,
     doisFabs: !sozinho && dividas.length > 0
   };
 }
@@ -935,11 +988,20 @@ function telaGastoForm(gastoId, consulta) {
     const g = db.grupos[gid];
     rascunhoGasto = editando ? {
       chave, grupoId: gid, descricao: existente.descricao, valor: centavosParaCampo(existente.valorCentavos),
-      pagoPor: existente.pagoPor, data: existente.data, divididoEntre: existente.divididoEntre.slice()
+      pagoPor: existente.pagoPor, data: existente.data, divididoEntre: existente.divididoEntre.slice(),
+      modo: 'igual', valores: {}, pct: {}
     } : {
       chave, grupoId: gid, descricao: '', valor: '', pagoPor: eu(), data: hojeISO(),
-      divididoEntre: g ? g.membros.slice() : []
+      divididoEntre: g ? g.membros.slice() : [], modo: 'igual', valores: {}, pct: {}
     };
+    const dv = editando && existente.divisao;
+    if (dv && dv.modo === 'valores') {
+      rascunhoGasto.modo = 'valores';
+      for (const id in dv.valores) rascunhoGasto.valores[id] = centavosParaCampo(dv.valores[id]);
+    } else if (dv && dv.modo === 'porcentagem') {
+      rascunhoGasto.modo = 'porcentagem';
+      for (const id in dv.pct) rascunhoGasto.pct[id] = pctTexto(dv.pct[id]).replace('%', '');
+    }
   }
   const r = rascunhoGasto;
   const g = db.grupos[r.grupoId];
@@ -955,9 +1017,28 @@ function telaGastoForm(gastoId, consulta) {
     };
   }
   const centavos = lerDinheiro(r.valor);
+  const temValor = !isNaN(centavos) && centavos > 0;
   const n = r.divididoEntre.length;
+  // Partes digitadas na divisão desigual (em centavos ou em centésimos de %).
+  const lerDigitadas = () => {
+    const ler = r.modo === 'valores' ? (id => { const v = lerDinheiro(r.valores[id]); return isNaN(v) ? 0 : v; }) : (id => lerPct(r.pct[id]));
+    const d = {};
+    if (r.modo !== 'igual') for (const id of g.membros) d[id] = ler(id);
+    return { digitadas: d, somaDigitada: Object.values(d).reduce((s, v) => s + (isNaN(v) ? 0 : v), 0) };
+  };
+  const { digitadas, somaDigitada } = lerDigitadas();
+  const alvo = r.modo === 'valores' ? centavos : 10000;
   let previa = 'Escolha quem divide o gasto.';
-  if (n) {
+  if (r.modo === 'valores') {
+    if (!temValor) previa = `Digite o valor do gasto para conferir a divisão.`;
+    else {
+      const dif = alvo - somaDigitada;
+      previa = `${dinheiro(somaDigitada)} de ${dinheiro(alvo)}</span><span class="t-corpo sec">${dif === 0 ? 'Os valores fecham com o total do gasto' : dif > 0 ? 'Faltam ' + dinheiro(dif) : 'Passou ' + dinheiro(-dif)}`;
+    }
+  } else if (r.modo === 'porcentagem') {
+    const dif = alvo - somaDigitada;
+    previa = `${pctTexto(somaDigitada)} de 100%</span><span class="t-corpo sec">${dif === 0 ? 'As porcentagens somam o total do gasto' : dif > 0 ? 'Faltam ' + pctTexto(dif) : 'Passou ' + pctTexto(-dif)}`;
+  } else if (n) {
     if (isNaN(centavos) || centavos <= 0) previa = `Dividido igualmente entre ${n} ${n === 1 ? 'pessoa' : 'pessoas'}`;
     else {
       const p = partes({ valorCentavos: centavos, divididoEntre: r.divididoEntre, pagoPor: r.pagoPor });
@@ -983,12 +1064,31 @@ function telaGastoForm(gastoId, consulta) {
           </label>
           ${campo({ rotulo: 'Data', nome: 'data', valor: r.data, tipo: 'date', extra: 'required' })}
           <div class="campo">
+            <span class="campo-rotulo">Como dividir</span>
+            <div class="chips" role="group" aria-label="Como dividir">
+              ${[['igual', 'Por igual'], ['valores', 'Valores'], ['porcentagem', 'Porcentagem']].map(([m, t]) => `<button type="button" class="pilula ${r.modo === m ? 'ativa' : ''}" data-modo="${m}" aria-pressed="${r.modo === m}">${t}</button>`).join('')}
+            </div>
+          </div>
+          ${r.modo === 'igual' ? `
+          <div class="campo">
             <span class="campo-rotulo">Dividir entre</span>
             <div class="chips">
               ${g.membros.map(id => `<label class="check-pessoa"><input type="checkbox" name="entre" value="${id}" ${r.divididoEntre.includes(id) ? 'checked' : ''}><span class="pilula ${r.divididoEntre.includes(id) ? 'ativa' : ''}">${esc(nomeCurto(id))}</span></label>`).join('')}
             </div>
             <span class="campo-erro" data-erro="entre"></span>
-          </div>
+          </div>` : `
+          <div class="campo">
+            <span class="campo-rotulo">${r.modo === 'valores' ? 'Quanto é de cada um (R$)' : 'Porcentagem de cada um (%)'}</span>
+            <div class="grade-partes">
+              ${g.membros.map(id => `<label class="campo">
+                <span class="campo-rotulo" data-vivo="r-${id}">${esc(nomeCurto(id))}${r.modo === 'porcentagem' && temValor && !isNaN(digitadas[id]) ? ' · ' + dinheiro(Math.round(centavos * digitadas[id] / 10000)) : ''}</span>
+                ${r.modo === 'valores'
+                  ? `<input class="campo-entrada" data-parte="${id}" value="${esc(r.valores[id] || '')}" placeholder="0,00" inputmode="numeric" autocomplete="off" aria-label="Valor de ${esc(nomeCurto(id))}">`
+                  : `<input class="campo-entrada" data-parte="${id}" value="${esc(r.pct[id] || '')}" placeholder="0" inputmode="decimal" autocomplete="off" maxlength="6" aria-label="Porcentagem de ${esc(nomeCurto(id))}">`}
+              </label>`).join('')}
+            </div>
+            <span class="campo-erro" data-erro="partes"></span>
+          </div>`}
           <div class="cartao" id="previa"><span class="t-corpo-forte">${previa}</span></div>
         </div>
       </form>`,
@@ -998,7 +1098,26 @@ function telaGastoForm(gastoId, consulta) {
         const tela = telaGastoForm(gastoId, consulta);
         const tmp = document.createElement('div'); tmp.innerHTML = tela.html;
         document.getElementById('previa').innerHTML = tmp.querySelector('#previa').innerHTML;
+        tmp.querySelectorAll('[data-vivo]').forEach(el => {
+          const alvo = f.querySelector(`[data-vivo="${el.dataset.vivo}"]`);
+          if (alvo) alvo.innerHTML = el.innerHTML;
+        });
       };
+      f.querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', () => {
+        if (r.modo === b.dataset.modo) return;
+        r.modo = b.dataset.modo;
+        if (r.modo === 'igual' && !r.divididoEntre.length) r.divididoEntre = g.membros.slice();
+        render();
+      }));
+      f.querySelectorAll('[data-parte]').forEach(el => {
+        const id = el.dataset.parte;
+        if (r.modo === 'valores') mascararDinheiro(el);
+        el.addEventListener('input', () => {
+          (r.modo === 'valores' ? r.valores : r.pct)[id] = el.value;
+          mostrarErro(f, 'partes', '');
+          atualizarPrevia();
+        });
+      });
       mascararDinheiro(f.valor);
       f.descricao.addEventListener('input', () => { r.descricao = f.descricao.value; });
       f.valor.addEventListener('input', () => { r.valor = f.valor.value; mostrarErro(f, 'valor', ''); atualizarPrevia(); });
@@ -1007,6 +1126,7 @@ function telaGastoForm(gastoId, consulta) {
       if (f.grupo) f.grupo.addEventListener('change', () => {
         const ng = db.grupos[f.grupo.value];
         r.grupoId = ng.id; r.pagoPor = ng.membros.includes(eu()) ? eu() : ng.membros[0]; r.divididoEntre = ng.membros.slice();
+        r.valores = {}; r.pct = {};
         render();
       });
       f.addEventListener('change', e => {
@@ -1024,11 +1144,31 @@ function telaGastoForm(gastoId, consulta) {
         if (!descricao) { mostrarErro(f, 'descricao', 'Escreva o que foi o gasto.'); ok = false; } else mostrarErro(f, 'descricao', '');
         if (isNaN(valor) || valor <= 0) { mostrarErro(f, 'valor', 'Digite um valor, como 129,10.'); ok = false; }
         if (!f.data.value) { mostrarErro(f, 'data', 'Escolha a data.'); ok = false; }
-        if (!r.divididoEntre.length) { mostrarErro(f, 'entre', 'Escolha ao menos uma pessoa.'); ok = false; }
+        let divisao = null;
+        let entre = r.divididoEntre.slice();
+        if (r.modo === 'igual') {
+          if (!entre.length) { mostrarErro(f, 'entre', 'Escolha ao menos uma pessoa.'); ok = false; }
+        } else {
+          const { digitadas, somaDigitada } = lerDigitadas();
+          const ids = g.membros.filter(id => digitadas[id] > 0);
+          const total = r.modo === 'valores' ? valor : 10000;
+          const dif = total - somaDigitada;
+          let msg = '';
+          if (g.membros.some(id => isNaN(digitadas[id]))) msg = 'Use números de 0 a 100, como 33,5.';
+          else if (!ids.length) msg = r.modo === 'valores' ? 'Coloque o valor de ao menos uma pessoa.' : 'Coloque a porcentagem de ao menos uma pessoa.';
+          else if (!isNaN(total) && dif !== 0) msg = r.modo === 'valores'
+            ? `A soma precisa fechar com o total: ${dif > 0 ? 'faltam ' + dinheiro(dif) : 'passou ' + dinheiro(-dif)}.`
+            : `As porcentagens precisam somar 100%: ${dif > 0 ? 'faltam ' + pctTexto(dif) : 'passou ' + pctTexto(-dif)}.`;
+          if (msg) { mostrarErro(f, 'partes', msg); ok = false; }
+          entre = ids;
+          const mapa = {}; for (const id of ids) mapa[id] = digitadas[id];
+          divisao = r.modo === 'valores' ? { modo: 'valores', valores: mapa } : { modo: 'porcentagem', pct: mapa };
+        }
         if (!ok) return;
-        const dados = { grupoId: g.id, descricao, valorCentavos: valor, pagoPor: f.pagoPor.value, data: f.data.value, divididoEntre: r.divididoEntre.slice(), atualizadoEm: agora() };
+        const dados = { grupoId: g.id, descricao, valorCentavos: valor, pagoPor: f.pagoPor.value, data: f.data.value, divididoEntre: entre, atualizadoEm: agora() };
+        if (divisao) dados.divisao = divisao;
         let id = gastoId;
-        if (editando) Object.assign(db.gastos[id], dados);
+        if (editando) { Object.assign(db.gastos[id], dados); if (!divisao) delete db.gastos[id].divisao; }
         else { id = novoId(); db.gastos[id] = { id, ...dados, criadoPor: eu(), criadoEm: agora() }; }
         registrar(editando ? 'gasto-editado' : 'gasto-adicionado', g.id, copiaGasto(db.gastos[id]));
         tocarGrupo(g.id);
@@ -1061,8 +1201,8 @@ function telaGasto(id) {
           <div style="display:flex;gap:12px;align-items:center"><span class="avatar">${esc(iniciaisNoGrupo(e.pagoPor, db.grupos[e.grupoId] ? db.grupos[e.grupoId].membros : [e.pagoPor]))}</span><span class="t-cg">${esc(nomeCurto(e.pagoPor))} pagou ${dinheiro(e.valorCentavos)}</span></div>
         </div>
         <div class="campo" style="gap:8px">
-          <span class="campo-rotulo">Quanto cada um deve</span>
-          ${e.divididoEntre.map(pid => `<div style="display:flex;gap:12px;align-items:center"><span class="avatar">${esc(iniciaisNoGrupo(pid, db.grupos[e.grupoId] ? db.grupos[e.grupoId].membros : e.divididoEntre))}</span><span class="t-cg" style="flex:1">${esc(nomeComVoce(pid))}</span><span class="t-corpo-forte">${dinheiro(p[pid])}</span></div>`).join('')}
+          <span class="campo-rotulo">Quanto cada um deve · ${!e.divisao ? 'por igual' : e.divisao.modo === 'valores' ? 'por valores' : 'por porcentagem'}</span>
+          ${e.divididoEntre.map(pid => `<div style="display:flex;gap:12px;align-items:center"><span class="avatar">${esc(iniciaisNoGrupo(pid, db.grupos[e.grupoId] ? db.grupos[e.grupoId].membros : e.divididoEntre))}</span><span class="t-cg" style="flex:1">${esc(nomeComVoce(pid))}${e.divisao && e.divisao.modo === 'porcentagem' ? ` <span class="sec">(${pctTexto(e.divisao.pct[pid] || 0)})</span>` : ''}</span><span class="t-corpo-forte">${dinheiro(p[pid])}</span></div>`).join('')}
         </div>
         <button class="btn btn-perigo btn-bloco" type="button" data-acao="apagar">${icone('lixeira')}Apagar gasto</button>
       </div>`,
@@ -1212,9 +1352,11 @@ function telaConfig(gid) {
       <hr class="divisor">
       <div class="secao-titulo">Membros · toque para editar o nome</div>
       ${g.membros.map(linhaMembro).join('')}
-      <form id="f-add" class="linha-add" style="padding:8px 16px 0" novalidate>
-        ${campo({ rotulo: 'Adicionar pessoa', nome: 'pessoa', placeholder: 'Digite o nome', extra: 'maxlength="40" list="lista-pessoas" enterkeyhint="done"' })}
-        <button class="btn btn-secundario" type="submit">Adicionar</button>
+      <form id="f-add" class="conteudo" style="padding:8px 16px 0;gap:16px" novalidate>
+        ${campo({ rotulo: 'Adicionar pessoa', nome: 'pessoa', placeholder: 'Digite o nome', extra: 'maxlength="40" list="lista-pessoas" enterkeyhint="next"' })}
+        ${campo({ rotulo: 'E-mail ou WhatsApp (opcional)', nome: 'contato', placeholder: 'Ex.: heloisa@email.com', extra: 'maxlength="80" autocomplete="off" enterkeyhint="done"' })}
+        <p class="nota m0">${AVISO_CONTATO}</p>
+        <button class="btn btn-secundario btn-bloco" type="submit">Adicionar ao grupo</button>
       </form>
       <datalist id="lista-pessoas">${sugestoes.map(p => `<option value="${esc(p.nome)}">`).join('')}</datalist>
       <p class="nota" style="padding:8px 16px">As dívidas são simplificadas automaticamente: o app mostra sempre o menor número de pagamentos entre as pessoas.</p>
@@ -1240,6 +1382,7 @@ function telaConfig(gid) {
         if (!n) return;
         if (g.membros.some(id => mesmoNome(nomeDe(id), n))) return mostrarErro(fa, 'pessoa', 'Essa pessoa já está no grupo.');
         const pid = acharOuCriarPessoa(n);
+        if (normalizar(fa.contato.value)) guardarContato(pid, fa.contato.value);
         g.membros.push(pid);
         registrar('pessoa-entrou', gid, { pessoaId: pid, pessoaNome: nomeDe(pid) });
         tocarGrupo(gid); salvar(); render(); toast(`${n} entrou no grupo`);
@@ -1262,6 +1405,7 @@ function editarMembro(gid, pid) {
     <h2>${pid === eu() ? 'Seu nome' : 'Editar pessoa'}</h2>
     <form id="f-membro" class="conteudo" style="padding:0" novalidate>
       ${campo({ rotulo: 'Nome', nome: 'nome', valor: p.nome, extra: 'maxlength="40"' })}
+      ${pid === eu() ? '' : campo({ rotulo: 'E-mail ou WhatsApp (opcional)', nome: 'contato', valor: p.contato || '', placeholder: 'Ex.: heloisa@email.com', extra: 'maxlength="80" autocomplete="off"' })}
       ${outrosGrupos ? `<p class="nota m0">O nome muda também nos outros ${outrosGrupos} ${outrosGrupos === 1 ? 'grupo' : 'grupos'} dessa pessoa.</p>` : ''}
       <div class="botoes">
         <button class="btn btn-principal btn-bloco" type="submit">Salvar</button>
@@ -1277,7 +1421,9 @@ function editarMembro(gid, pid) {
       const nome = normalizar(f.nome.value);
       if (!nome) return mostrarErro(f, 'nome', 'Digite um nome.');
       if (g.membros.some(id => id !== pid && mesmoNome(nomeDe(id), nome))) return mostrarErro(f, 'nome', 'Já tem alguém com esse nome no grupo.');
-      p.nome = nome; p.atualizadoEm = agora(); tocarGrupo(gid); salvar(); fechar(); render(); toast('Nome salvo');
+      p.nome = nome; p.atualizadoEm = agora();
+      if (f.contato) guardarContato(pid, f.contato.value);
+      tocarGrupo(gid); salvar(); fechar(); render(); toast('Salvo');
     });
     s.addEventListener('click', e => {
       if (e.target.closest('[data-acao="cancelar"]')) fechar();
@@ -1544,6 +1690,7 @@ function render() {
   app.innerHTML = tela.html + (tela.menu ? menuInferior(tela.menu) : '');
   document.body.classList.toggle('com-menu', !!tela.menu);
   document.body.classList.toggle('dois-fabs', !!tela.doisFabs);
+  app.classList.toggle('fundo-cinza', !!tela.fundoCinza);
   tela.ligar && tela.ligar();
   if (rotaAtual !== rotaAnterior) window.scrollTo(0, 0);
   rotaAnterior = rotaAtual;
