@@ -1,0 +1,177 @@
+/* CÓPIA. Não edite aqui: o original fica em Meu Design System/tokens.css.
+   Atualize com ferramentas/sincronizar-tokens.ps1 */
+/* =====================================================================
+   Meu Design System — tokens v1 (tema claro)
+   Fonte da verdade do sistema. Os apps (Divide, jogo) importam este arquivo;
+   o Figma/FigCraft é só espelho.
+
+   Identidade de origem: petróleo #0A4359, verdes #2CC799 / #41BF84,
+   quase-preto ameixa #1E0126. Neutros levemente esverdeados.
+
+   Regras:
+   - Nos apps, use só tokens SEMÂNTICOS (--cor-*, --espaco-*, --raio-*, --texto-*).
+     Primitivos (--neutro-*, --petroleo-*, --tamanho-*) existem para montar os semânticos.
+   - Ação principal é petróleo. Verde só para saldo positivo, sucesso e marca.
+   - Toast: embaixo, centralizado, 16px acima do menu inferior e dos botões flutuantes;
+     um por vez; some em 4s (6s se tiver ação). Ícone conforme a situação (sucesso, erro, info).
+   - Tooltip só complementa: hover (0,5s) no computador, toque longo no celular.
+   - Bricolage (destaque) só em títulos de tela, nome do grupo e números de destaque.
+
+   Fontes (Google Fonts) — colocar no <head> do app:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+   ===================================================================== */
+
+:root {
+  /* ---------- Primitivos: cores ---------- */
+  --neutro-0: #FFFFFF;
+  --neutro-25: #F7F8F7;
+  --neutro-50: #F0F3F2;
+  --neutro-100: #E3E8E6;
+  --neutro-200: #D3DAD8;
+  --neutro-400: #9AA6A3;
+  --neutro-500: #75827F;
+  --neutro-600: #52605D;
+  --neutro-800: #24332F;
+  --neutro-900: #10201E;
+
+  --petroleo-50: #E4EEF1;
+  --petroleo-100: #D6E5EC;
+  --petroleo-200: #C3D7E0;
+  --petroleo-300: #9CC3D3;   /* ícone de info sobre fundo escuro */
+  --petroleo-700: #155A73;
+  --petroleo-800: #1E5266;   /* hover da ação principal (900 + 8% de branco) */
+  --petroleo-900: #0A4359;
+  --petroleo-950: #093B4E;   /* pressionado da ação principal (900 + 12% de preto) */
+
+  --verde-50: #E3F5EC;
+  --verde-700: #1E8A5B;
+  --verde-marca: #2CC799;
+
+  --coral-50: #FBEDE4;
+  --coral-100: #F6D9C7;
+  --coral-300: #F0946A;      /* ícone de erro sobre fundo escuro */
+  --coral-700: #C2571A;
+
+  --menta-100: #D3ECE2;
+  --ameixa-100: #EADFEA;
+  --ameixa-700: #5B2A66;     /* link visitado; derivado do quase-preto #1E0126 */
+  --areia-100: #EFE6D6;
+
+  /* ---------- Primitivos: medidas ---------- */
+  --tamanho-4: 4px;
+  --tamanho-8: 8px;
+  --tamanho-12: 12px;
+  --tamanho-14: 14px;
+  --tamanho-16: 16px;
+  --tamanho-20: 20px;
+  --tamanho-24: 24px;
+  --tamanho-32: 32px;
+  --tamanho-48: 48px;
+  --tamanho-64: 64px;
+  --tamanho-999: 999px;
+
+  /* ---------- Primitivos: fontes ---------- */
+  --fonte-base: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fonte-destaque-familia: "Bricolage Grotesque", "Hanken Grotesk", system-ui, sans-serif;
+
+  /* ---------- Semânticos: fundos e bordas ---------- */
+  --cor-fundo-pagina: var(--neutro-0);
+  --cor-fundo-superficie: var(--neutro-50);
+  --cor-fundo-destaque: var(--neutro-100);
+  --cor-borda-padrao: var(--neutro-200);
+  --cor-borda-forte: var(--neutro-400);
+  --cor-borda-hover: var(--neutro-600);
+  --cor-fundo-sobre-capa: rgba(255, 255, 255, .7);   /* botões de ícone sobre a capa do grupo */
+  --cor-fundo-escurecido: rgba(16, 32, 30, .35);     /* atrás de folhas (modal) */
+
+  /* ---------- Semânticos: texto ---------- */
+  --cor-texto-principal: var(--neutro-900);
+  --cor-texto-secundario: var(--neutro-600);
+  --cor-texto-terciario: var(--neutro-500);
+  --cor-texto-sobre-acao: var(--neutro-0);
+
+  /* ---------- Semânticos: ação ---------- */
+  --cor-acao-principal: var(--petroleo-900);
+  --cor-acao-secundaria: var(--neutro-0);
+  --cor-acao-selecionada: var(--petroleo-50);
+  --cor-acao-foco: var(--petroleo-700);
+
+  /* ---------- Semânticos: estados (hover = passar o mouse, pressionada = clique) ---------- */
+  --cor-acao-principal-hover: var(--petroleo-800);
+  --cor-acao-principal-pressionada: var(--petroleo-950);
+  --cor-acao-secundaria-hover: var(--neutro-25);
+  --cor-acao-secundaria-pressionada: var(--neutro-100);
+  --cor-acao-selecionada-hover: var(--petroleo-100);
+  --cor-acao-selecionada-pressionada: var(--petroleo-200);
+  --cor-acao-fantasma-hover: var(--neutro-50);          /* botão de ícone, botão texto, aba do menu */
+  --cor-acao-fantasma-pressionada: var(--neutro-100);
+  --cor-item-hover: var(--neutro-25);
+  --cor-item-pressionado: var(--neutro-50);
+  --cor-perigo-hover: var(--coral-50);
+  --cor-perigo-pressionado: var(--coral-100);
+  --opacidade-desativado: .45;
+
+  /* ---------- Semânticos: inverso (tooltip e toast, fundo escuro) ---------- */
+  --cor-inverso-fundo: var(--neutro-900);
+  --cor-inverso-texto: var(--neutro-0);
+  --cor-inverso-sucesso: var(--verde-marca);
+  --cor-inverso-erro: var(--coral-300);
+  --cor-inverso-info: var(--petroleo-300);
+  --cor-inverso-acao: var(--petroleo-100);
+
+  /* ---------- Semânticos: link ---------- */
+  --cor-link: var(--petroleo-900);
+  --cor-link-hover: var(--petroleo-700);       /* + sublinhado de 2px */
+  --cor-link-pressionado: var(--petroleo-950);
+  --cor-link-visitado: var(--ameixa-700);
+
+  /* ---------- Semânticos: barra de progresso ---------- */
+  --cor-progresso-trilho: var(--neutro-100);
+  --cor-progresso-padrao: var(--petroleo-900);
+  --cor-progresso-positivo: var(--verde-700);
+
+  /* ---------- Semânticos: marca e saldos ---------- */
+  --cor-marca: var(--verde-marca);
+  --cor-saldo-positivo: var(--verde-700);
+  --cor-saldo-positivo-fundo: var(--verde-50);
+  --cor-saldo-negativo: var(--coral-700);
+  --cor-saldo-negativo-fundo: var(--coral-50);
+
+  /* ---------- Semânticos: capas de grupo ---------- */
+  --cor-capa-viagem: var(--menta-100);
+  --cor-capa-casa: var(--petroleo-100);
+  --cor-capa-casal: var(--ameixa-100);
+  --cor-capa-outro: var(--areia-100);
+
+  /* ---------- Sombras (tingidas de petróleo / neutro) ---------- */
+  --sombra-flutuante: 0 4px 14px rgba(10, 67, 89, .22);
+  --sombra-suave: 0 4px 14px rgba(16, 32, 30, .10);
+
+  /* ---------- Espaçamento ---------- */
+  --espaco-xxs: var(--tamanho-4);
+  --espaco-xs: var(--tamanho-8);
+  --espaco-sm: var(--tamanho-12);
+  --espaco-md: var(--tamanho-16);
+  --espaco-lg: var(--tamanho-24);
+  --espaco-xl: var(--tamanho-32);
+
+  /* ---------- Cantos ---------- */
+  --raio-sm: var(--tamanho-4);
+  --raio-md: var(--tamanho-8);
+  --raio-lg: var(--tamanho-12);
+  --raio-pilula: var(--tamanho-999);
+
+  /* ---------- Tipografia ---------- */
+  --texto-familia: var(--fonte-base);
+  --texto-familia-destaque: var(--fonte-destaque-familia);
+  --texto-legenda: var(--tamanho-12);
+  --texto-corpo: var(--tamanho-14);
+  --texto-corpo-grande: var(--tamanho-16);
+  --texto-titulo: var(--tamanho-20);
+  --texto-cabecalho: var(--tamanho-24);
+  --texto-destaque: var(--tamanho-32);
+  --texto-titulo-pagina: var(--tamanho-48);   /* só site/portfólio, Bricolage, -2% */
+  --texto-display: var(--tamanho-64);         /* só site/portfólio (hero), Bricolage, -2%, altura 110% */
+}

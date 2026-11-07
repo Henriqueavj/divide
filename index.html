@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#FFFFFF"><!-- tema claro -->
 <title>Divide</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone-192.png">
@@ -13,48 +13,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css"><!-- tokens do Meu Design System (cópia; ver ferramentas/sincronizar-tokens.ps1) -->
 <style>
-/* ===== Tokens primitivos (iguais ao FigCraft) ===== */
-:root {
-  --cinza-0: #FFFFFF; --cinza-50: #F6F6F6; --cinza-100: #EDEDED; --cinza-200: #DADADA;
-  --cinza-300: #C2C2C2; --cinza-400: #9E9E9E; --cinza-500: #7A7A7A; --cinza-600: #5C5C5C;
-  --cinza-700: #424242; --cinza-800: #2B2B2B; --cinza-900: #1A1A1A;
-  --verde-50: #E8F5EE; --verde-600: #1E8A57;
-  --laranja-50: #FCEFE6; --laranja-600: #C8561A;
-  --azul-300: #A9C4E0; --rosa-300: #E3AFB8; --areia-300: #E5C9A6; --menta-300: #A8D5C2;
-  --tamanho-4: 4px; --tamanho-8: 8px; --tamanho-12: 12px; --tamanho-14: 14px; --tamanho-16: 16px;
-  --tamanho-20: 20px; --tamanho-24: 24px; --tamanho-32: 32px; --tamanho-999: 999px;
-  --fonte-familia: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-
-  /* ===== Tokens semânticos ===== */
-  --cor-fundo-pagina: var(--cinza-0);
-  --cor-fundo-superficie: var(--cinza-50);
-  --cor-fundo-destaque: var(--cinza-100);
-  --cor-borda-padrao: var(--cinza-200);
-  --cor-borda-forte: var(--cinza-400);
-  --cor-texto-principal: var(--cinza-900);
-  --cor-texto-secundario: var(--cinza-600);
-  --cor-texto-terciario: var(--cinza-500);
-  --cor-texto-sobre-acao: var(--cinza-0);
-  --cor-acao-principal: var(--cinza-800);
-  --cor-acao-secundaria: var(--cinza-0);
-  --cor-acao-selecionada: var(--cinza-100);
-  --cor-saldo-positivo: var(--verde-600);
-  --cor-saldo-positivo-fundo: var(--verde-50);
-  --cor-saldo-negativo: var(--laranja-600);
-  --cor-saldo-negativo-fundo: var(--laranja-50);
-  --cor-capa-viagem: var(--areia-300);
-  --cor-capa-casa: var(--azul-300);
-  --cor-capa-casal: var(--rosa-300);
-  --cor-capa-outro: var(--menta-300);
-  --espaco-xxs: var(--tamanho-4); --espaco-xs: var(--tamanho-8); --espaco-sm: var(--tamanho-12);
-  --espaco-md: var(--tamanho-16); --espaco-lg: var(--tamanho-24); --espaco-xl: var(--tamanho-32);
-  --raio-sm: var(--tamanho-4); --raio-md: var(--tamanho-8); --raio-lg: var(--tamanho-12); --raio-pilula: var(--tamanho-999);
-  --texto-legenda: var(--tamanho-12); --texto-corpo: var(--tamanho-14); --texto-corpo-grande: var(--tamanho-16);
-  --texto-titulo: var(--tamanho-20); --texto-cabecalho: var(--tamanho-24); --texto-destaque: var(--tamanho-32);
-  --texto-familia: var(--fonte-familia);
-}
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -76,8 +37,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* Estilos de texto */
-.t-destaque { font-size: var(--texto-destaque); font-weight: 700; }
-.t-cabecalho { font-size: var(--texto-cabecalho); font-weight: 600; }
+/* A fonte de destaque (Bricolage) aparece só em títulos de tela, nome do grupo e totais. */
+.t-destaque { font-family: var(--texto-familia-destaque); font-size: var(--texto-destaque); font-weight: 700; letter-spacing: -.01em; }
+.t-cabecalho { font-family: var(--texto-familia-destaque); font-size: var(--texto-cabecalho); font-weight: 700; letter-spacing: -.01em; }
+/* Números alinhados em colunas de valor */
+.valor, .resumo-total, .parte, .t-destaque { font-variant-numeric: tabular-nums; }
 .t-titulo { font-size: var(--texto-titulo); font-weight: 600; }
 .t-cg { font-size: var(--texto-corpo-grande); }
 .t-cg-forte { font-size: var(--texto-corpo-grande); font-weight: 600; }
@@ -96,7 +60,6 @@ a { color: inherit; text-decoration: none; }
   border: 0; background: none; padding: 8px; margin: -8px; border-radius: var(--raio-pilula);
   display: inline-flex; cursor: pointer; color: var(--cor-texto-principal);
 }
-.btn-icone:active { background: var(--cor-fundo-destaque); }
 
 /* Barra superior */
 .barra {
@@ -116,29 +79,29 @@ a { color: inherit; text-decoration: none; }
 .btn-principal { background: var(--cor-acao-principal); color: var(--cor-texto-sobre-acao); }
 .btn-secundario { background: var(--cor-acao-secundaria); color: var(--cor-texto-principal); border-color: var(--cor-borda-forte); }
 .btn-perigo { background: var(--cor-acao-secundaria); color: var(--cor-saldo-negativo); border-color: var(--cor-saldo-negativo); }
-.btn:disabled { opacity: .45; cursor: default; }
+.btn:disabled { opacity: var(--opacidade-desativado); cursor: default; pointer-events: none; }
 .btn-bloco { width: 100%; }
-.btn-texto { background: none; border: 0; padding: var(--espaco-xs) 0; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.btn-texto { background: none; border: 0; padding: var(--espaco-xs); margin: 0 calc(-1 * var(--espaco-xs)); border-radius: var(--raio-md); font-weight: 600; text-decoration: underline; cursor: pointer; }
 .pilula {
   display: inline-flex; align-items: center; gap: var(--espaco-xs);
   padding: var(--espaco-xs) var(--espaco-md); min-height: 36px;
   border-radius: var(--raio-pilula); border: 1px solid var(--cor-borda-forte);
   background: var(--cor-fundo-pagina); font-size: var(--texto-corpo); font-weight: 600; cursor: pointer;
 }
-.pilula.ativa { background: var(--cor-acao-selecionada); border-color: var(--cor-texto-principal); }
+.pilula.ativa { background: var(--cor-acao-selecionada); border-color: var(--cor-acao-principal); color: var(--cor-acao-principal); }
 /* Botões flutuantes: o principal fica colado no canto, os secundários empilham acima. */
 .fabs {
   position: fixed; bottom: 24px; z-index: 6;
   right: max(16px, calc((100vw - 480px) / 2 + 16px));
   display: flex; flex-direction: column; align-items: flex-end; gap: var(--espaco-sm);
 }
-.fab { box-shadow: 0 4px 12px rgba(0,0,0,.2); }
-.fab.btn-secundario { box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+.fab { box-shadow: var(--sombra-flutuante); }
+.fab.btn-secundario { box-shadow: var(--sombra-suave); border-color: var(--cor-borda-padrao); }
 
 /* Resumo do grupo */
 .resumo-total { background: var(--cor-fundo-superficie); border-radius: var(--raio-lg); padding: var(--espaco-md); display: flex; flex-direction: column; gap: var(--espaco-xxs); }
 .resumo-total .topo { display: flex; justify-content: space-between; align-items: center; gap: var(--espaco-xs); }
-.resumo-total .valor-total { font-size: var(--texto-cabecalho); font-weight: 600; }
+.resumo-total .valor-total { font-family: var(--texto-familia-destaque); font-size: 30px; font-weight: 700; letter-spacing: -.01em; }
 .selo { display: inline-flex; align-items: center; padding: var(--espaco-xxs) var(--espaco-xs); border-radius: var(--raio-pilula); background: var(--cor-saldo-positivo-fundo); color: var(--cor-saldo-positivo); font-size: var(--texto-legenda); font-weight: 500; white-space: nowrap; }
 .resumo-total .partes { margin-top: var(--espaco-xs); padding-top: var(--espaco-xs); border-top: 1px solid var(--cor-borda-padrao); display: flex; flex-direction: column; gap: var(--espaco-xxs); }
 .resumo-total .parte { display: flex; justify-content: space-between; gap: var(--espaco-sm); color: var(--cor-texto-secundario); }
@@ -153,8 +116,9 @@ a { color: inherit; text-decoration: none; }
   outline: none; appearance: none; -webkit-appearance: none;
 }
 .campo-entrada::placeholder { color: var(--cor-texto-terciario); }
-.campo-entrada:focus { border-bottom: 2px solid var(--cor-texto-principal); padding-bottom: 7px; }
-select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right center; padding-right: 24px; }
+.campo-entrada:focus { border-bottom: 2px solid var(--cor-acao-foco); padding-bottom: 7px; }
+.campo:focus-within .campo-rotulo { color: var(--cor-acao-foco); }
+select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2310201E' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right center; padding-right: 24px; }
 .campo-valor { font-size: var(--texto-cabecalho); font-weight: 600; }
 .campo-erro { font-size: var(--texto-legenda); color: var(--cor-saldo-negativo); min-height: 0; }
 .linha-add { display: flex; gap: var(--espaco-sm); align-items: flex-end; }
@@ -170,7 +134,6 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
   padding: var(--espaco-sm) var(--espaco-md); width: 100%;
   background: none; border: 0; text-align: left; cursor: pointer;
 }
-.item:active { background: var(--cor-fundo-superficie); }
 .item-textos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .cortar { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item-gasto { gap: var(--espaco-sm); }
@@ -197,7 +160,7 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
   border: 1px solid var(--cor-borda-padrao); border-radius: var(--raio-lg);
   background: var(--cor-fundo-pagina); font-size: var(--texto-legenda); font-weight: 500; cursor: pointer;
 }
-.seletor[aria-pressed="true"] { background: var(--cor-acao-selecionada); border: 2px solid var(--cor-texto-principal); }
+.seletor[aria-pressed="true"] { background: var(--cor-acao-selecionada); border: 2px solid var(--cor-acao-principal); color: var(--cor-acao-principal); }
 
 /* Chips de membros */
 .chips { display: flex; flex-wrap: wrap; gap: var(--espaco-xs); }
@@ -219,13 +182,17 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
   display: flex; flex-direction: column; justify-content: space-between; gap: var(--espaco-md);
 }
 .capa-grande .acoes { display: flex; justify-content: space-between; }
-.capa-grande .btn-icone { background: rgba(255,255,255,.6); margin: 0; }
+.capa-grande .btn-icone { background: var(--cor-fundo-sobre-capa); margin: 0; }
+.capa-grande { position: relative; overflow: hidden; }
+.capa-grande > * { position: relative; }
+.capa-grande .ondas { position: absolute; right: -60px; top: -40px; width: 260px; height: 260px; pointer-events: none; }
+.capa-grande .ondas circle { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
 .resumo { padding: var(--espaco-md) var(--espaco-md) var(--espaco-xs); display: flex; flex-direction: column; gap: var(--espaco-sm); }
 .resumo .linhas { display: flex; flex-direction: column; gap: 2px; }
 
 /* Sheet e toast */
 .fundo-sheet {
-  position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.35);
+  position: fixed; inset: 0; z-index: 20; background: var(--cor-fundo-escurecido);
   display: flex; align-items: flex-end; justify-content: center;
 }
 .sheet {
@@ -236,11 +203,16 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .sheet h2 { margin: 0; font-size: var(--texto-titulo); font-weight: 600; }
 .sheet .botoes { display: flex; flex-direction: column; gap: var(--espaco-xs); }
 .toast {
-  position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top)); transform: translateX(-50%); z-index: 30;
-  background: var(--cor-acao-principal); color: var(--cor-texto-sobre-acao);
-  padding: var(--espaco-xs) var(--espaco-md); border-radius: var(--raio-pilula); font-weight: 500;
-  max-width: calc(100vw - 32px);
+  position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 30;
+  display: flex; align-items: center; gap: var(--espaco-sm);
+  background: var(--cor-inverso-fundo); color: var(--cor-inverso-texto); box-shadow: var(--sombra-suave);
+  padding: var(--espaco-sm) var(--espaco-md) var(--espaco-sm) var(--espaco-sm); border-radius: var(--raio-lg);
+  font-size: var(--texto-corpo); font-weight: 600;
+  width: max-content; max-width: min(358px, calc(100vw - 32px));
 }
+.toast-sucesso .toast-icone { stroke: var(--cor-inverso-sucesso); }
+.toast-erro .toast-icone { stroke: var(--cor-inverso-erro); }
+.toast-info .toast-icone { stroke: var(--cor-inverso-info); }
 .aviso { margin: var(--espaco-md); padding: var(--espaco-sm); border-radius: var(--raio-md); background: var(--cor-saldo-negativo-fundo); color: var(--cor-saldo-negativo); font-size: var(--texto-legenda); }
 .oculto { display: none !important; }
 
@@ -255,8 +227,9 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--espaco-xxs);
   padding: var(--espaco-xs) var(--espaco-xxs); border: 0; background: none; cursor: pointer;
   font-size: var(--texto-legenda); color: var(--cor-texto-principal); opacity: .55;
+  border-radius: var(--raio-md);
 }
-.menu-aba[aria-current="page"] { opacity: 1; font-weight: 500; }
+.menu-aba[aria-current="page"] { opacity: 1; font-weight: 600; color: var(--cor-acao-principal); }
 .menu-aba:disabled { opacity: .3; cursor: default; }
 body.com-menu #app { padding-bottom: 168px; }
 body.com-menu.dois-fabs #app { padding-bottom: 228px; }
@@ -266,6 +239,34 @@ body.com-menu .fabs { bottom: calc(80px + env(safe-area-inset-bottom)); }
   background: var(--cor-fundo-destaque); border: 1px dashed var(--cor-borda-forte);
   display: flex; align-items: center; justify-content: center; color: var(--cor-texto-secundario);
 }
+
+/* ===== Estados de interação (Meu Design System) =====
+   Hover só em aparelhos com mouse (no celular ele "gruda" depois do toque); clique (:active) em todos. */
+@media (hover: hover) {
+  .btn-principal:hover { background: var(--cor-acao-principal-hover); }
+  .btn-secundario:hover { background: var(--cor-acao-secundaria-hover); border-color: var(--cor-borda-hover); }
+  .btn-perigo:hover { background: var(--cor-perigo-hover); }
+  .btn-texto:hover, .btn-icone:hover, .menu-aba:hover { background: var(--cor-acao-fantasma-hover); }
+  .menu-aba:not([aria-current]):not(:disabled):hover { opacity: .8; }
+  .capa-grande .btn-icone:hover { background: var(--cor-fundo-pagina); }
+  .pilula:hover, .check-pessoa:hover .pilula { background: var(--cor-acao-secundaria-hover); border-color: var(--cor-borda-hover); }
+  .pilula.ativa:hover, .check-pessoa:hover .pilula.ativa { background: var(--cor-acao-selecionada-hover); border-color: var(--cor-acao-principal); }
+  .seletor:hover { background: var(--cor-acao-secundaria-hover); border-color: var(--cor-borda-hover); }
+  .seletor[aria-pressed="true"]:hover { background: var(--cor-acao-selecionada-hover); border-color: var(--cor-acao-principal); }
+  .item:hover { background: var(--cor-item-hover); }
+  .campo-entrada:hover:not(:focus) { border-bottom-color: var(--cor-borda-hover); }
+  .chip button:hover { background: var(--cor-acao-fantasma-pressionada); }
+}
+.btn-principal:active { background: var(--cor-acao-principal-pressionada); }
+.btn-secundario:active { background: var(--cor-acao-secundaria-pressionada); border-color: var(--cor-borda-hover); }
+.btn-perigo:active { background: var(--cor-perigo-pressionado); }
+.btn-texto:active, .btn-icone:active, .menu-aba:active { background: var(--cor-acao-fantasma-pressionada); }
+.capa-grande .btn-icone:active { background: var(--cor-fundo-destaque); }
+.pilula:active, .check-pessoa:active .pilula { background: var(--cor-acao-secundaria-pressionada); }
+.pilula.ativa:active, .check-pessoa:active .pilula.ativa { background: var(--cor-acao-selecionada-pressionada); }
+.seletor:active { background: var(--cor-acao-secundaria-pressionada); }
+.seletor[aria-pressed="true"]:active { background: var(--cor-acao-selecionada-pressionada); }
+.item:active { background: var(--cor-item-pressionado); }
 </style>
 </head>
 <body>
@@ -394,7 +395,7 @@ const ICONES = {
   'fechar': '<path d="M18 6L6 18"/><path d="M6 6l12 12"/>',
   'check': '<path d="M20 6L9 17l-5-5"/>',
   'mais': '<path d="M12 5v14"/><path d="M5 12h14"/>',
-  'engrenagem': '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="M4.9 4.9L7 7"/><path d="M17 17l2.1 2.1"/><path d="M4.9 19.1L7 17"/><path d="M17 7l2.1-2.1"/>',
+  'engrenagem': '<path d="M10.21 4.82L10.61 2.1L13.39 2.1L13.79 4.82L15.81 5.66L18.02 4.01L19.99 5.98L18.34 8.19L19.18 10.21L21.9 10.61L21.9 13.39L19.18 13.79L18.34 15.81L19.99 18.02L18.02 19.99L15.81 18.34L13.79 19.18L13.39 21.9L10.61 21.9L10.21 19.18L8.19 18.34L5.98 19.99L4.01 18.02L5.66 15.81L4.82 13.79L2.1 13.39L2.1 10.61L4.82 10.21L5.66 8.19L4.01 5.98L5.98 4.01L8.19 5.66Z"/><circle cx="12" cy="12" r="3"/>',
   'viagem': '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
   'casa': '<path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
   'casal': '<path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/>',
@@ -409,7 +410,10 @@ const ICONES = {
   'pessoa': '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
   'atividade': '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
   'conta': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.5-2 3.5-3 5.5-3s4 1 5.5 3"/>',
-  'camera': '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3"/>'
+  'camera': '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3"/>',
+  'sucesso': '<circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.7 2.7L16.2 9.6"/>',
+  'erro': '<circle cx="12" cy="12" r="10"/><path d="M12 7.5v5.5"/><path d="M12 16.4v.2"/>',
+  'info': '<circle cx="12" cy="12" r="10"/><path d="M12 11v5.5"/><path d="M12 7.4v.2"/>'
 };
 function menuInferior(ativa) {
   const aba = (id, rotulo, ic, href) => `<a class="menu-aba" href="#${href}" ${ativa === id ? 'aria-current="page"' : ''}>${icone(ic)}${rotulo}</a>`;
@@ -429,6 +433,10 @@ const TIPOS = {
   outro: { rotulo: 'Outro', icone: 'outro', cor: 'var(--cor-capa-outro)' }
 };
 const tipoDe = g => TIPOS[g && g.tipo] || TIPOS.outro;
+// Ondas da identidade ("contato que reverbera"): círculos de contorno, discretos, na capa do grupo.
+const ONDAS = `<svg class="ondas" viewBox="0 0 260 260" aria-hidden="true">
+  <circle cx="130" cy="130" r="30" stroke-opacity=".22"/><circle cx="130" cy="130" r="58" stroke-opacity=".15"/>
+  <circle cx="130" cy="130" r="88" stroke-opacity=".10"/><circle cx="130" cy="130" r="120" stroke-opacity=".06"/></svg>`;
 
 /* ================= Consultas ================= */
 const eu = () => db.euId;
@@ -516,14 +524,29 @@ function tocarGrupo(gid) { if (db.grupos[gid]) db.grupos[gid].atualizadoEm = ago
 
 /* ================= Interface: utilitários ================= */
 let app = document.getElementById('app');
+/* Toast (Meu Design System): embaixo, centralizado, 16px acima do menu e dos botões flutuantes;
+   um por vez; some em 4s. Tipo diz o ícone: 'sucesso' (padrão), 'erro' ou 'info'. */
 let toastTimer;
-function toast(msg) {
+const TOAST_ICONE = { sucesso: 'sucesso', erro: 'erro', info: 'info' };
+function toast(msg, tipo = 'sucesso') {
   document.querySelectorAll('.toast').forEach(t => t.remove());
   const t = document.createElement('div');
-  t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
+  t.className = 'toast toast-' + tipo;
+  t.setAttribute('role', tipo === 'erro' ? 'alert' : 'status');
+  t.innerHTML = icone(TOAST_ICONE[tipo] || 'sucesso', 'toast-icone') + `<span>${esc(msg)}</span>`;
   document.body.appendChild(t);
+  posicionarToast();
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.remove(), 2200);
+  toastTimer = setTimeout(() => t.remove(), 4000);
+}
+// Fica 16px acima do que estiver fixo embaixo (botões flutuantes > menu > borda da tela).
+// Chamado de novo no render(), porque o toast às vezes nasce antes da troca de tela.
+function posicionarToast() {
+  const t = document.querySelector('.toast');
+  if (!t) return;
+  const alvo = document.querySelector('.fabs') || document.querySelector('.menu');
+  const topo = alvo ? alvo.getBoundingClientRect().top : window.innerHeight;
+  t.style.bottom = Math.max(16, window.innerHeight - topo + 16) + 'px';
 }
 function abrirSheet(html, ao) {
   const fundo = document.createElement('div');
@@ -778,6 +801,7 @@ function telaGrupo(gid) {
   return {
     html: `
       <div class="capa-grande" style="background:${tipoDe(g).cor}">
+        ${ONDAS}
         <div class="acoes">
           <a class="btn-icone" href="#/" aria-label="Voltar">${icone('seta-voltar')}</a>
           <a class="btn-icone" href="#/grupo/${gid}/config" aria-label="Configurações do grupo">${icone('engrenagem')}</a>
@@ -1286,8 +1310,8 @@ entradaArquivo.addEventListener('change', async () => {
   entradaArquivo.value = '';
   if (!arq) return;
   let novo;
-  try { novo = JSON.parse(await arq.text()); } catch (e) { return toast('Esse arquivo não é um backup válido'); }
-  if (!validarDados(novo)) return toast('Esse arquivo não é um backup do Divide');
+  try { novo = JSON.parse(await arq.text()); } catch (e) { return toast('Esse arquivo não é um backup válido', 'erro'); }
+  if (!validarDados(novo)) return toast('Esse arquivo não é um backup do Divide', 'erro');
   const n = Object.keys(novo.grupos).length;
   const temDados = Object.keys(db.grupos).length > 0;
   if (temDados && !await confirmar({ titulo: 'Substituir os dados deste aparelho?', texto: `O arquivo tem ${n} ${n === 1 ? 'grupo' : 'grupos'}. Tudo o que está neste aparelho será trocado pelo conteúdo dele.`, ok: 'Substituir', perigo: true })) return;
@@ -1347,6 +1371,7 @@ function render() {
   tela.ligar && tela.ligar();
   if (rotaAtual !== rotaAnterior) window.scrollTo(0, 0);
   rotaAnterior = rotaAtual;
+  posicionarToast();
   const foco = app.querySelector('[autofocus]');
   if (foco && matchMedia('(pointer:fine)').matches) foco.focus();
 }
