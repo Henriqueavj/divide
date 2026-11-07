@@ -171,6 +171,8 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .cartao { background: var(--cor-fundo-superficie); border-radius: var(--raio-lg); padding: var(--espaco-md); display: flex; flex-direction: column; gap: var(--espaco-xxs); }
 .cartao.centro { align-items: center; text-align: center; padding: var(--espaco-lg); gap: var(--espaco-md); }
 .nota { font-size: var(--texto-legenda); color: var(--cor-texto-secundario); }
+/* Atividade: o que foi apagado aparece riscado e em cinza */
+.riscado { text-decoration: line-through; color: var(--cor-texto-secundario); }
 
 /* Seletor de tipo */
 .seletores { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--espaco-xs); }
@@ -311,17 +313,50 @@ body.com-menu .fabs { bottom: calc(80px + env(safe-area-inset-bottom)); }
 const CHAVE = 'divide.dados.v1';
 const ESQUEMA = 1;
 let armazenamentoOk = true;
+const novoId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+const agora = () => new Date().toISOString();
 
 function dadosVazios() {
-  return { esquema: ESQUEMA, euId: null, pessoas: {}, grupos: {}, gastos: {}, acertos: {} };
+  return { esquema: ESQUEMA, euId: null, pessoas: {}, grupos: {}, gastos: {}, acertos: {}, eventos: [] };
 }
 function carregar() {
   try {
     const bruto = localStorage.getItem(CHAVE);
     if (!bruto) return dadosVazios();
     const d = JSON.parse(bruto);
-    return validarDados(d) ? d : dadosVazios();
+    return validarDados(d) ? garantirEventos(d) : dadosVazios();
   } catch (e) { armazenamentoOk = false; return dadosVazios(); }
+}
+/* Histórico (tela Atividade). Cada evento: { id, tipo, em, por, grupoId, grupoNome, ...cópia do que mudou }.
+   Tipos: grupo-criado, grupo-apagado, pessoa-entrou, pessoa-saiu, gasto-adicionado, gasto-editado,
+   gasto-apagado, acerto-adicionado, acerto-editado, acerto-apagado.
+   Dados de antes do histórico existir (ou de arquivos antigos importados) ganham eventos montados
+   a partir das datas de criação e edição. Apagados antigos não dá para recuperar. */
+const MAX_EVENTOS = 1000;
+const copiaGasto = e => ({ alvoId: e.id, descricao: e.descricao, valorCentavos: e.valorCentavos, pagoPor: e.pagoPor, divididoEntre: e.divididoEntre.slice() });
+const copiaAcerto = a => ({ alvoId: a.id, de: a.de, para: a.para, valorCentavos: a.valorCentavos });
+const mudouDepois = o => o.atualizadoEm && o.criadoEm && o.atualizadoEm.slice(0, 16) !== o.criadoEm.slice(0, 16);
+function garantirEventos(d) {
+  if (Array.isArray(d.eventos)) return d;
+  const ev = [];
+  const nomeGrupo = gid => (d.grupos[gid] && d.grupos[gid].nome) || '';
+  const base = (tipo, em, por, gid, extra) => ev.push({ id: novoId(), tipo, em, por, grupoId: gid, grupoNome: nomeGrupo(gid), ...extra });
+  for (const g of Object.values(d.grupos)) base('grupo-criado', g.criadoEm, d.euId, g.id, {});
+  for (const e of Object.values(d.gastos)) {
+    base('gasto-adicionado', e.criadoEm, e.criadoPor || d.euId, e.grupoId, copiaGasto(e));
+    if (mudouDepois(e)) base('gasto-editado', e.atualizadoEm, d.euId, e.grupoId, copiaGasto(e));
+  }
+  for (const a of Object.values(d.acertos)) {
+    base('acerto-adicionado', a.criadoEm, a.criadoPor || d.euId, a.grupoId, copiaAcerto(a));
+    if (mudouDepois(a)) base('acerto-editado', a.atualizadoEm, d.euId, a.grupoId, copiaAcerto(a));
+  }
+  d.eventos = ev.filter(x => x.em).sort((a, b) => a.em.localeCompare(b.em)).slice(-MAX_EVENTOS);
+  return d;
+}
+function registrar(tipo, gid, extra = {}) {
+  const g = db.grupos[gid];
+  db.eventos.push({ id: novoId(), tipo, em: agora(), por: eu(), grupoId: gid, grupoNome: g ? g.nome : '', ...extra });
+  if (db.eventos.length > MAX_EVENTOS) db.eventos.splice(0, db.eventos.length - MAX_EVENTOS);
 }
 function salvar() {
   try { localStorage.setItem(CHAVE, JSON.stringify(db)); armazenamentoOk = true; }
@@ -332,9 +367,6 @@ function validarDados(d) {
     ['pessoas', 'grupos', 'gastos', 'acertos'].every(k => d[k] && typeof d[k] === 'object');
 }
 let db = carregar();
-
-const novoId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-const agora = () => new Date().toISOString();
 
 /* ================= Formatação ================= */
 const formatoBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -452,7 +484,7 @@ function menuInferior(ativa) {
   return `<nav class="menu" aria-label="Menu principal">
     ${aba('grupos', 'Grupos', 'pessoas', '/')}
     ${aba('amigos', 'Amigos', 'pessoa', '/amigos')}
-    <button class="menu-aba" type="button" disabled title="Em breve">${icone('atividade')}Atividade</button>
+    ${aba('atividade', 'Atividade', 'atividade', '/atividade')}
     ${aba('conta', 'Conta', 'conta', '/conta')}
   </nav>`;
 }
@@ -765,6 +797,7 @@ function telaCriarGrupo() {
           id, nome, tipo: r.tipo, membros: [eu(), ...r.nomes.map(acharOuCriarPessoa)],
           criadoEm: agora(), atualizadoEm: agora()
         };
+        registrar('grupo-criado', id);
         salvar();
         rascunhoGrupo = null;
         location.replace('#/grupo/' + id);
@@ -782,17 +815,19 @@ function itensDoGrupo(gid) {
   ];
   return itens.sort((a, b) => b.data.localeCompare(a.data) || b.criado.localeCompare(a.criado));
 }
-function htmlItemGasto(e) {
-  const [, m, d] = e.data.split('-');
-  const p = partes(e);
-  const minha = p[eu()] || 0;
-  let rot = '', val = '', cls = 'ter';
+// O que um gasto significa para você: emprestou (verde), deve (coral) ou nada.
+function efeitoDoGasto(e) {
+  const minha = partes(e)[eu()] || 0;
   if (e.pagoPor === eu()) {
     const emprestou = e.valorCentavos - minha;
-    if (emprestou > 0) { rot = 'você emprestou'; val = dinheiro(emprestou); cls = 'pos'; }
-    else { rot = 'só você'; }
-  } else if (minha > 0) { rot = 'você deve'; val = dinheiro(minha); cls = 'neg'; }
-  else { rot = 'não envolve você'; }
+    return emprestou > 0 ? { rot: 'você emprestou', val: dinheiro(emprestou), cls: 'pos' } : { rot: 'só você', val: '', cls: 'ter' };
+  }
+  if (minha > 0) return { rot: 'você deve', val: dinheiro(minha), cls: 'neg' };
+  return { rot: 'não envolve você', val: '', cls: 'ter' };
+}
+function htmlItemGasto(e) {
+  const [, m, d] = e.data.split('-');
+  const { rot, val, cls } = efeitoDoGasto(e);
   return `<a class="item item-gasto" href="#/gasto/${e.id}">
     <span class="data"><span class="t-legenda sec">${MESES[Number(m) - 1]}</span><span class="dia">${d}</span></span>
     <span class="item-textos"><span class="t-cg cortar">${esc(e.descricao)}</span><span class="t-legenda sec cortar">${esc(nomeCurto(e.pagoPor))} pagou ${dinheiro(e.valorCentavos)}</span></span>
@@ -993,6 +1028,7 @@ function telaGastoForm(gastoId, consulta) {
         let id = gastoId;
         if (editando) Object.assign(db.gastos[id], dados);
         else { id = novoId(); db.gastos[id] = { id, ...dados, criadoPor: eu(), criadoEm: agora() }; }
+        registrar(editando ? 'gasto-editado' : 'gasto-adicionado', g.id, copiaGasto(db.gastos[id]));
         tocarGrupo(g.id);
         salvar();
         rascunhoGasto = null;
@@ -1031,6 +1067,7 @@ function telaGasto(id) {
     ligar() {
       app.querySelector('[data-acao="apagar"]').addEventListener('click', async () => {
         if (!await confirmar({ titulo: 'Apagar este gasto?', texto: `“${e.descricao}” sai do grupo e os saldos são refeitos.`, ok: 'Apagar', perigo: true })) return;
+        registrar('gasto-apagado', e.grupoId, copiaGasto(e));
         delete db.gastos[id];
         tocarGrupo(e.grupoId);
         salvar();
@@ -1112,6 +1149,7 @@ function telaAcertoForm(acertoId, consulta) {
         }
         if (e.target.closest('[data-acao="apagar"]')) {
           if (!await confirmar({ titulo: 'Apagar este acerto?', texto: 'Os saldos voltam a ser como antes do pagamento.', ok: 'Apagar', perigo: true })) return;
+          registrar('acerto-apagado', gid, copiaAcerto(db.acertos[acertoId]));
           delete db.acertos[acertoId];
           tocarGrupo(gid); salvar(); rascunhoAcerto = null;
           toast('Acerto apagado');
@@ -1128,8 +1166,10 @@ function telaAcertoForm(acertoId, consulta) {
         if (!r.data) { mostrarErro(f, 'data', 'Escolha a data.'); ok = false; }
         if (!ok) return;
         const dados = { grupoId: gid, de: r.de, para: r.para, valorCentavos: v, data: r.data, atualizadoEm: agora() };
-        if (editando) Object.assign(db.acertos[acertoId], dados);
-        else { const id = novoId(); db.acertos[id] = { id, ...dados, criadoPor: eu(), criadoEm: agora() }; }
+        let id = acertoId;
+        if (editando) Object.assign(db.acertos[id], dados);
+        else { id = novoId(); db.acertos[id] = { id, ...dados, criadoPor: eu(), criadoEm: agora() }; }
+        registrar(editando ? 'acerto-editado' : 'acerto-adicionado', gid, copiaAcerto(db.acertos[id]));
         tocarGrupo(gid); salvar(); rascunhoAcerto = null;
         toast(editando ? 'Acerto atualizado' : 'Pagamento registrado');
         location.replace('#/grupo/' + gid);
@@ -1197,7 +1237,9 @@ function telaConfig(gid) {
         const n = normalizar(fa.pessoa.value);
         if (!n) return;
         if (g.membros.some(id => mesmoNome(nomeDe(id), n))) return mostrarErro(fa, 'pessoa', 'Essa pessoa já está no grupo.');
-        g.membros.push(acharOuCriarPessoa(n));
+        const pid = acharOuCriarPessoa(n);
+        g.membros.push(pid);
+        registrar('pessoa-entrou', gid, { pessoaId: pid, pessoaNome: nomeDe(pid) });
         tocarGrupo(gid); salvar(); render(); toast(`${n} entrou no grupo`);
         document.querySelector('#f-add [name="pessoa"]').focus();
       });
@@ -1239,6 +1281,7 @@ function editarMembro(gid, pid) {
       if (e.target.closest('[data-acao="cancelar"]')) fechar();
       if (e.target.closest('[data-acao="tirar"]')) {
         g.membros = g.membros.filter(id => id !== pid);
+        registrar('pessoa-saiu', gid, { pessoaId: pid, pessoaNome: p.nome });
         tocarGrupo(gid); salvar(); fechar(); render(); toast(`${p.nome} saiu do grupo`);
       }
     });
@@ -1248,6 +1291,7 @@ async function apagarGrupo(gid) {
   const g = db.grupos[gid];
   const n = gastosDo(gid).length + acertosDo(gid).length;
   if (!await confirmar({ titulo: `Apagar “${g.nome}”?`, texto: n ? `Os ${n} lançamentos do grupo também serão apagados. Não dá para desfazer.` : 'Não dá para desfazer.', ok: 'Apagar grupo', perigo: true })) return;
+  registrar('grupo-apagado', gid);
   gastosDo(gid).forEach(e => delete db.gastos[e.id]);
   acertosDo(gid).forEach(a => delete db.acertos[a.id]);
   delete db.grupos[gid];
@@ -1292,6 +1336,84 @@ function telaAmigos() {
         <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
       </div></div>`}`,
     menu: 'amigos'
+  };
+}
+
+// 08 Atividade: histórico de tudo o que aconteceu nos grupos, do mais recente para o mais antigo, separado por dia.
+const formatoDia = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+const formatoDiaAno = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+function rotuloDoDia(diaISO) {
+  const hoje = hojeISO();
+  const d = new Date(diaISO + 'T12:00:00');
+  const ontem = new Date(hoje + 'T12:00:00'); ontem.setDate(ontem.getDate() - 1);
+  if (diaISO === hoje) return 'Hoje';
+  if (diaISO === isoLocal(ontem.toISOString())) return 'Ontem';
+  const txt = (diaISO.slice(0, 4) === hoje.slice(0, 4) ? formatoDia : formatoDiaAno).format(d).replace('-feira', '');
+  return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+function htmlEvento(ev) {
+  const g = db.grupos[ev.grupoId];
+  const grupoNome = g ? g.nome : ev.grupoNome;
+  const quem = ev.por === eu() ? 'Você' : nomeDe(ev.por);
+  const ini = g ? iniciaisNoGrupo(ev.por, g.membros) : iniciais(nomeDe(ev.por));
+  let titulo = '', sub = '', valor = '', link = '', riscado = false;
+  const onde = ' · ' + grupoNome;
+  switch (ev.tipo) {
+    case 'grupo-criado': titulo = 'Grupo criado'; sub = quem + ' criou' + onde; link = g ? '/grupo/' + g.id : ''; break;
+    case 'grupo-apagado': titulo = grupoNome; sub = quem + ' apagou o grupo'; riscado = true; break;
+    case 'pessoa-entrou': titulo = ev.pessoaNome + ' entrou no grupo'; sub = quem + ' adicionou' + onde; link = g ? '/grupo/' + g.id : ''; break;
+    case 'pessoa-saiu': titulo = ev.pessoaNome + ' saiu do grupo'; sub = quem + ' tirou' + onde; link = g ? '/grupo/' + g.id : ''; break;
+    case 'gasto-adicionado': case 'gasto-editado': case 'gasto-apagado': {
+      titulo = ev.descricao;
+      sub = quem + ({ 'gasto-adicionado': ' adicionou', 'gasto-editado': ' editou', 'gasto-apagado': ' apagou' })[ev.tipo] + onde;
+      if (ev.tipo === 'gasto-apagado') riscado = true;
+      else {
+        const { rot, val, cls } = efeitoDoGasto(ev);
+        valor = `<span class="valor ${cls}"><span class="t-legenda cortar" style="max-width:100%">${rot}</span>${val ? `<span class="t-corpo-forte">${val}</span>` : ''}</span>`;
+        if (db.gastos[ev.alvoId]) link = '/gasto/' + ev.alvoId;
+      }
+      break;
+    }
+    case 'acerto-adicionado': case 'acerto-editado': case 'acerto-apagado': {
+      titulo = 'Acerto de contas';
+      if (ev.tipo === 'acerto-adicionado') sub = `${ev.de === eu() ? 'Você' : nomeDe(ev.de)} pagou ${ev.para === eu() ? 'você' : nomeDe(ev.para)}` + onde;
+      else sub = quem + (ev.tipo === 'acerto-editado' ? ' editou' : ' apagou') + onde;
+      if (ev.tipo === 'acerto-apagado') riscado = true;
+      else {
+        valor = `<span class="valor"><span class="t-legenda sec">pagamento</span><span class="t-corpo-forte">${dinheiro(ev.valorCentavos)}</span></span>`;
+        if (db.acertos[ev.alvoId]) link = '/acerto/' + ev.alvoId;
+      }
+      break;
+    }
+    default: return '';
+  }
+  const miolo = `<span class="avatar">${esc(ini)}</span>
+    <span class="item-textos"><span class="t-cg cortar${riscado ? ' riscado' : ''}">${esc(titulo)}</span><span class="t-legenda sec cortar">${esc(sub)}</span></span>
+    ${valor}`;
+  return link
+    ? `<a class="item item-gasto" style="gap:12px" href="#${link}">${miolo}</a>`
+    : `<div class="item item-gasto" style="gap:12px;cursor:default">${miolo}</div>`;
+}
+function telaAtividade() {
+  const lista = (db.eventos || []).slice().sort((a, b) => b.em.localeCompare(a.em));
+  let html = '', diaAtual = null;
+  for (const ev of lista) {
+    const linha = htmlEvento(ev);
+    if (!linha) continue;
+    const dia = isoLocal(ev.em);
+    if (dia !== diaAtual) { html += `<div class="secao-titulo">${esc(rotuloDoDia(dia))}</div>`; diaAtual = dia; }
+    html += linha;
+  }
+  return {
+    html: `
+      <div style="padding:24px 16px 8px"><h1 class="t-cabecalho m0">Atividade</h1></div>
+      ${html || `<div style="padding:16px"><div class="cartao centro">
+        ${icone('atividade')}
+        <span class="t-cg-forte">Nada por aqui ainda</span>
+        <span class="t-corpo sec">Gastos, acertos e mudanças nos grupos aparecem aqui, do mais recente para o mais antigo.</span>
+        <a class="btn btn-principal" href="#/grupo/novo">Criar grupo</a>
+      </div></div>`}`,
+    menu: 'atividade'
   };
 }
 
@@ -1369,7 +1491,7 @@ entradaArquivo.addEventListener('change', async () => {
   const temDados = Object.keys(db.grupos).length > 0;
   if (temDados && !await confirmar({ titulo: 'Substituir os dados deste aparelho?', texto: `O arquivo tem ${n} ${n === 1 ? 'grupo' : 'grupos'}. Tudo o que está neste aparelho será trocado pelo conteúdo dele.`, ok: 'Substituir', perigo: true })) return;
   delete novo.exportadoEm;
-  db = novo;
+  db = garantirEventos(novo);
   salvar();
   toast('Dados importados');
   location.replace(db.euId && db.pessoas[db.euId] ? '#/' : '#/bemvindo');
@@ -1394,6 +1516,7 @@ function rotear() {
   if (p[0] === 'bemvindo') return telaInicio();
   if (p[0] === 'conta' || p[0] === 'dados') return telaConta();
   if (p[0] === 'amigos') return telaAmigos();
+  if (p[0] === 'atividade') return telaAtividade();
   if (p[0] === 'grupo' && p[1] === 'novo') return telaCriarGrupo();
   if (p[0] === 'grupo' && p[2] === 'config') return telaConfig(p[1]);
   if (p[0] === 'grupo') return telaGrupo(p[1]);

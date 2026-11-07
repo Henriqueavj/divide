@@ -1,7 +1,7 @@
 // Guarda o app no aparelho para funcionar sem internet.
 // A página principal busca a versão nova quando há internet e usa a cópia guardada quando não há.
 // Ao publicar mudanças em arquivos que não sejam o index.html, aumente a VERSAO.
-const VERSAO = 'divide-v4';
+const VERSAO = 'divide-v5';
 const ARQUIVOS = ['./', './index.html', './tokens.css', './manifest.webmanifest', './icone-192.png', './icone-512.png'];
 
 self.addEventListener('install', e => {
