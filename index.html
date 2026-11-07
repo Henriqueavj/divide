@@ -715,22 +715,24 @@ function telaInicio() {
   return {
     html: `
       ${avisoArmazenamento()}
+      ${lista.length ? `
       <div style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
         <div style="display:flex;justify-content:space-between;align-items:center;min-height:40px">
           <h1 class="t-cabecalho m0">Grupos</h1>
-          ${lista.length ? `<a class="btn-icone" href="#/grupo/novo" aria-label="Criar grupo">${icone('pessoa-mais')}</a>` : ''}
+          <a class="btn-icone" href="#/grupo/novo" aria-label="Criar grupo">${icone('pessoa-mais')}</a>
         </div>
-        ${lista.length ? `<div style="display:flex;flex-direction:column;gap:4px">${saldoGeral}</div>` : ''}
+        <div style="display:flex;flex-direction:column;gap:4px">${saldoGeral}</div>
       </div>
-      ${lista.length ? itens : `
-        <div style="padding:16px"><div class="cartao centro">
-          <span class="t-cg-forte">Nenhum grupo ainda</span>
-          <span class="t-corpo sec">Crie um grupo para a viagem, a casa ou o que vocês dividem.</span>
-        </div></div>`}
+      ${itens}
       ${ONDAS_FAB}
-      <div class="fabs">${lista.length
-        ? `<a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a>`
-        : `<a class="btn btn-principal fab" href="#/grupo/novo">${icone('pessoa-mais')}Criar grupo</a>`}</div>`,
+      <div class="fabs"><a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a></div>` : `
+      <div style="padding:24px 16px 8px"><h1 class="t-cabecalho m0">Grupos</h1></div>
+      <div style="padding:16px"><div class="cartao centro">
+        ${icone('pessoas')}
+        <span class="t-cg-forte">Nenhum grupo ainda</span>
+        <span class="t-corpo sec">Crie um grupo para a viagem, a casa ou o que vocês dividem.</span>
+        <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
+      </div></div>`}`,
     menu: 'grupos'
   };
 }
