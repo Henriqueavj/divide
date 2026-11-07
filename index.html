@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF"><!-- tema claro -->
+<meta name="theme-color" content="#FFFFFF"><!-- trocada pelo script do tema abaixo -->
 <title>Divide</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone-192.png">
@@ -15,6 +15,24 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css"><!-- tokens do Meu Design System (cópia; ver ferramentas/sincronizar-tokens.ps1) -->
+<script>
+/* Tema: segue o celular ('auto'), a menos que a pessoa escolha 'claro' ou 'escuro' (guardado em localStorage 'tema').
+   Roda antes de desenhar a tela, para não piscar branco. aplicarTema() pode ser chamada de novo depois de trocar. */
+(function () {
+  var escuroNoCelular = matchMedia('(prefers-color-scheme: dark)');
+  function aplicarTema() {
+    var escolha = 'auto';
+    try { escolha = localStorage.getItem('tema') || 'auto'; } catch (e) {}
+    var tema = escolha === 'auto' ? (escuroNoCelular.matches ? 'escuro' : 'claro') : escolha;
+    document.documentElement.dataset.tema = tema;
+    // Cor da barra do celular = fundo da página de cada tema (--cor-fundo-pagina).
+    document.querySelector('meta[name="theme-color"]').content = tema === 'escuro' ? '#071C24' : '#FFFFFF';
+  }
+  aplicarTema();
+  escuroNoCelular.addEventListener('change', aplicarTema);
+  window.aplicarTema = aplicarTema;
+})();
+</script>
 <style>
 
 * { box-sizing: border-box; }
@@ -119,6 +137,8 @@ a { color: inherit; text-decoration: none; }
 .campo-entrada:focus { border-bottom: 2px solid var(--cor-acao-foco); padding-bottom: 7px; }
 .campo:focus-within .campo-rotulo { color: var(--cor-acao-foco); }
 select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2310201E' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right center; padding-right: 24px; }
+/* A setinha é um desenho com a cor escrita dentro (= --cor-texto-principal de cada tema). */
+:root[data-tema="escuro"] select.campo-entrada { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23E8F0EE' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
 .campo-valor { font-size: var(--texto-cabecalho); font-weight: 600; }
 .campo-erro { font-size: var(--texto-legenda); color: var(--cor-saldo-negativo); min-height: 0; }
 .linha-add { display: flex; gap: var(--espaco-sm); align-items: flex-end; }
@@ -187,6 +207,11 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .capa-grande > * { position: relative; }
 .capa-grande .ondas { position: absolute; right: -60px; top: -40px; width: 260px; height: 260px; pointer-events: none; }
 .capa-grande .ondas circle { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
+/* Ondas também no topo da tela inicial; a cor vem do tema (petróleo no claro, petróleo claro no escuro). */
+.inicio-topo { position: relative; overflow: hidden; }
+.inicio-topo > :not(.ondas) { position: relative; }
+.inicio-topo .ondas { position: absolute; right: -70px; top: -70px; width: 260px; height: 260px; pointer-events: none; }
+.inicio-topo .ondas circle { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
 .resumo { padding: var(--espaco-md) var(--espaco-md) var(--espaco-xs); display: flex; flex-direction: column; gap: var(--espaco-sm); }
 .resumo .linhas { display: flex; flex-direction: column; gap: 2px; }
 
@@ -646,7 +671,8 @@ function telaInicio() {
   return {
     html: `
       ${avisoArmazenamento()}
-      <div style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
+      <div class="inicio-topo" style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
+        ${ONDAS}
         <div style="display:flex;justify-content:space-between;align-items:center">
           <h1 class="t-cabecalho m0">Grupos</h1>
           <a class="btn-icone" href="#/grupo/novo" aria-label="Criar grupo">${icone('pessoa-mais')}</a>
