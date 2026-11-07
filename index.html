@@ -209,12 +209,11 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .capa-grande .ondas circle { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
 /* Ondas na tela inicial, destacando a ação principal; a cor vem do tema (petróleo no claro, petróleo claro no escuro).
    Ficam por trás de tudo (z-index -1), presas ao #app (isolation) e cortadas nas laterais (overflow-x: clip), sem rolagem.
-   - Com grupos: saem de trás do "Adicionar gasto" (centro 44px da borda direita, no meio do botão) e param no menu.
-   - Sem grupos (não há botão flutuante): saem do ícone de criar grupo, no topo. */
+   Saem sempre de trás do botão flutuante (centro 44px da borda direita, no meio do botão) e param no menu.
+   O botão é "Criar grupo" enquanto não há grupos e vira "Adicionar gasto" depois do primeiro;
+   aí o ícone de criar grupo aparece no topo. */
 #app { position: relative; isolation: isolate; overflow-x: clip; }
 .ondas circle { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
-.inicio-topo { position: relative; }
-.inicio-topo .ondas { position: absolute; right: -102px; top: -90px; width: 260px; height: 260px; pointer-events: none; z-index: -1; }
 .ondas-fab {
   position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 480px; overflow: hidden; pointer-events: none; z-index: -1;
@@ -684,11 +683,10 @@ function telaInicio() {
   return {
     html: `
       ${avisoArmazenamento()}
-      <div class="inicio-topo" style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
-        ${lista.length ? '' : ONDAS}
-        <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;min-height:40px">
           <h1 class="t-cabecalho m0">Grupos</h1>
-          <a class="btn-icone" href="#/grupo/novo" aria-label="Criar grupo">${icone('pessoa-mais')}</a>
+          ${lista.length ? `<a class="btn-icone" href="#/grupo/novo" aria-label="Criar grupo">${icone('pessoa-mais')}</a>` : ''}
         </div>
         ${lista.length ? `<div style="display:flex;flex-direction:column;gap:4px">${saldoGeral}</div>` : ''}
       </div>
@@ -696,9 +694,11 @@ function telaInicio() {
         <div style="padding:16px"><div class="cartao centro">
           <span class="t-cg-forte">Nenhum grupo ainda</span>
           <span class="t-corpo sec">Crie um grupo para a viagem, a casa ou o que vocês dividem.</span>
-          <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
         </div></div>`}
-      ${lista.length ? `${ONDAS_FAB}<div class="fabs"><a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a></div>` : ''}`,
+      ${ONDAS_FAB}
+      <div class="fabs">${lista.length
+        ? `<a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a>`
+        : `<a class="btn btn-principal fab" href="#/grupo/novo">${icone('mais')}Criar grupo</a>`}</div>`,
     menu: 'grupos'
   };
 }
