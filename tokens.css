@@ -1,7 +1,7 @@
 /* CÓPIA. Não edite aqui: o original fica em Meu Design System/tokens.css.
    Atualize com ferramentas/sincronizar-tokens.ps1 */
 /* =====================================================================
-   Meu Design System — tokens v1 (tema claro)
+   Meu Design System — tokens v2 (temas claro e escuro)
    Fonte da verdade do sistema. Os apps (Divide, jogo) importam este arquivo;
    o Figma/FigCraft é só espelho.
 
@@ -16,6 +16,14 @@
      um por vez; some em 4s (6s se tiver ação). Ícone conforme a situação (sucesso, erro, info).
    - Tooltip só complementa: hover (0,5s) no computador, toque longo no celular.
    - Bricolage (destaque) só em títulos de tela, nome do grupo e números de destaque.
+  - Tema escuro: segue o celular, com opção de trocar. O app grava a escolha
+    ('claro' | 'escuro' | 'auto') e marca <html data-tema="claro|escuro"> ANTES de desenhar a tela,
+    com este script no <head> (logo depois do link do tokens.css):
+      <script>(function(){var e=localStorage.getItem('tema')||'auto';
+        if(e==='auto')e=matchMedia('(prefers-color-scheme: dark)').matches?'escuro':'claro';
+        document.documentElement.dataset.tema=e;})();</script>
+    No modo 'auto', escute matchMedia(...).addEventListener('change', ...) e remarque.
+    O escuro só redefine SEMÂNTICOS; quem usa só semânticos não precisa mudar nada.
 
    Fontes (Google Fonts) — colocar no <head> do app:
    <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,6 +66,14 @@
   --ameixa-100: #EADFEA;
   --ameixa-700: #5B2A66;     /* link visitado; derivado do quase-preto #1E0126 */
   --areia-100: #EFE6D6;
+
+  /* Noite: fundos do tema escuro, petróleo bem fechado (não preto puro) */
+  --noite-950: #071C24;      /* página */
+  --noite-900: #0C2630;      /* superfície */
+  --noite-850: #12303B;      /* destaque / superfície elevada */
+  --noite-800: #1A3B47;      /* borda padrão */
+  --noite-700: #2E5260;      /* borda forte */
+  --noite-500: #6E8C97;      /* borda hover */
 
   /* ---------- Primitivos: medidas ---------- */
   --tamanho-4: 4px;
@@ -174,4 +190,75 @@
   --texto-destaque: var(--tamanho-32);
   --texto-titulo-pagina: var(--tamanho-48);   /* só site/portfólio, Bricolage, -2% */
   --texto-display: var(--tamanho-64);         /* só site/portfólio (hero), Bricolage, -2%, altura 110% */
+
+  color-scheme: light;
+}
+
+/* =====================================================================
+   Tema escuro — só os semânticos de cor mudam. Medidas, fontes e cantos são os mesmos.
+   Ação vira petróleo claro com texto escuro; o inverso (toast, tooltip) vira claro.
+   ===================================================================== */
+:root[data-tema="escuro"] {
+  color-scheme: dark;
+
+  --cor-fundo-pagina: var(--noite-950);
+  --cor-fundo-superficie: var(--noite-900);
+  --cor-fundo-destaque: var(--noite-850);
+  --cor-borda-padrao: var(--noite-800);
+  --cor-borda-forte: var(--noite-700);
+  --cor-borda-hover: var(--noite-500);
+  --cor-fundo-sobre-capa: rgba(7, 28, 36, .6);
+  --cor-fundo-escurecido: rgba(0, 0, 0, .55);
+
+  --cor-texto-principal: #E8F0EE;
+  --cor-texto-secundario: #A9BAB7;
+  --cor-texto-terciario: #8A9C98;
+  --cor-texto-sobre-acao: var(--noite-950);
+
+  --cor-acao-principal: var(--petroleo-300);
+  --cor-acao-secundaria: var(--noite-900);
+  --cor-acao-selecionada: #163F4E;
+  --cor-acao-foco: var(--petroleo-300);
+
+  --cor-acao-principal-hover: #B3D2DE;
+  --cor-acao-principal-pressionada: #87B3C5;
+  --cor-acao-secundaria-hover: var(--noite-850);
+  --cor-acao-secundaria-pressionada: var(--noite-800);
+  --cor-acao-selecionada-hover: #1C4A5B;
+  --cor-acao-selecionada-pressionada: #23566A;
+  --cor-acao-fantasma-hover: rgba(232, 240, 238, .06);
+  --cor-acao-fantasma-pressionada: rgba(232, 240, 238, .10);
+  --cor-item-hover: rgba(232, 240, 238, .04);
+  --cor-item-pressionado: rgba(232, 240, 238, .08);
+  --cor-perigo-hover: rgba(240, 148, 106, .12);
+  --cor-perigo-pressionado: rgba(240, 148, 106, .20);
+
+  --cor-inverso-fundo: #E8F0EE;
+  --cor-inverso-texto: var(--noite-950);
+  --cor-inverso-sucesso: var(--verde-700);
+  --cor-inverso-erro: var(--coral-700);
+  --cor-inverso-info: var(--petroleo-700);
+  --cor-inverso-acao: var(--petroleo-900);
+
+  --cor-link: var(--petroleo-300);
+  --cor-link-hover: var(--petroleo-200);
+  --cor-link-pressionado: var(--petroleo-100);
+  --cor-link-visitado: #D2B4DA;
+
+  --cor-progresso-trilho: var(--noite-800);
+  --cor-progresso-padrao: var(--petroleo-300);
+  --cor-progresso-positivo: var(--verde-marca);
+
+  --cor-saldo-positivo: var(--verde-marca);
+  --cor-saldo-positivo-fundo: rgba(44, 199, 153, .14);
+  --cor-saldo-negativo: var(--coral-300);
+  --cor-saldo-negativo-fundo: rgba(240, 148, 106, .14);
+
+  --cor-capa-viagem: #1D4A3F;
+  --cor-capa-casa: #1A4556;
+  --cor-capa-casal: #3E2A47;
+  --cor-capa-outro: #4A4030;
+
+  --sombra-flutuante: 0 4px 14px rgba(0, 0, 0, .45);
+  --sombra-suave: 0 4px 14px rgba(0, 0, 0, .35);
 }
