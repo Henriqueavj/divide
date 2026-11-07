@@ -1331,6 +1331,7 @@ function telaAmigos() {
         <p class="t-corpo sec m0">Pessoas que você adicionou nos grupos. O saldo de cada uma soma todos os grupos.</p>
       </div>
       ${ids.length ? linhas : `<div style="padding:16px"><div class="cartao centro">
+        ${icone('pessoa')}
         <span class="t-cg-forte">Ninguém por aqui ainda</span>
         <span class="t-corpo sec">As pessoas aparecem aqui quando você as adiciona em um grupo.</span>
         <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
@@ -1411,7 +1412,7 @@ function telaAtividade() {
         ${icone('atividade')}
         <span class="t-cg-forte">Nada por aqui ainda</span>
         <span class="t-corpo sec">Gastos, acertos e mudanças nos grupos aparecem aqui, do mais recente para o mais antigo.</span>
-        <a class="btn btn-principal" href="#/grupo/novo">Criar grupo</a>
+        <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
       </div></div>`}`,
     menu: 'atividade'
   };
