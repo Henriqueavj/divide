@@ -207,11 +207,19 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 .capa-grande > * { position: relative; }
 .capa-grande .ondas { position: absolute; right: -60px; top: -40px; width: 260px; height: 260px; pointer-events: none; }
 .capa-grande .ondas circle { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
-/* Ondas também no topo da tela inicial; a cor vem do tema (petróleo no claro, petróleo claro no escuro). */
-.inicio-topo { position: relative; overflow: hidden; }
-.inicio-topo > :not(.ondas) { position: relative; }
-.inicio-topo .ondas { position: absolute; right: -70px; top: -70px; width: 260px; height: 260px; pointer-events: none; }
-.inicio-topo .ondas circle { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
+/* Ondas na tela inicial, destacando a ação principal; a cor vem do tema (petróleo no claro, petróleo claro no escuro).
+   Ficam por trás de tudo (z-index -1), presas ao #app (isolation) e cortadas nas laterais (overflow-x: clip), sem rolagem.
+   - Com grupos: saem de trás do "Adicionar gasto" (centro 44px da borda direita, no meio do botão) e param no menu.
+   - Sem grupos (não há botão flutuante): saem do ícone de criar grupo, no topo. */
+#app { position: relative; isolation: isolate; overflow-x: clip; }
+.ondas circle { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
+.inicio-topo { position: relative; }
+.inicio-topo .ondas { position: absolute; right: -102px; top: -90px; width: 260px; height: 260px; pointer-events: none; z-index: -1; }
+.ondas-fab {
+  position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; overflow: hidden; pointer-events: none; z-index: -1;
+}
+.ondas-fab svg { position: absolute; width: 520px; height: 520px; right: -216px; bottom: calc(env(safe-area-inset-bottom) - 155px); }
 .resumo { padding: var(--espaco-md) var(--espaco-md) var(--espaco-xs); display: flex; flex-direction: column; gap: var(--espaco-sm); }
 .resumo .linhas { display: flex; flex-direction: column; gap: 2px; }
 
@@ -462,6 +470,11 @@ const tipoDe = g => TIPOS[g && g.tipo] || TIPOS.outro;
 const ONDAS = `<svg class="ondas" viewBox="0 0 260 260" aria-hidden="true">
   <circle cx="130" cy="130" r="30" stroke-opacity=".22"/><circle cx="130" cy="130" r="58" stroke-opacity=".15"/>
   <circle cx="130" cy="130" r="88" stroke-opacity=".10"/><circle cx="130" cy="130" r="120" stroke-opacity=".06"/></svg>`;
+// Versão maior, com um anel a mais, que sai de trás do botão flutuante da tela inicial.
+const ONDAS_FAB = `<div class="ondas-fab" aria-hidden="true"><svg class="ondas" viewBox="0 0 520 520">
+  <circle cx="260" cy="260" r="40" stroke-opacity=".22"/><circle cx="260" cy="260" r="80" stroke-opacity=".15"/>
+  <circle cx="260" cy="260" r="125" stroke-opacity=".10"/><circle cx="260" cy="260" r="175" stroke-opacity=".06"/>
+  <circle cx="260" cy="260" r="230" stroke-opacity=".04"/></svg></div>`;
 
 /* ================= Consultas ================= */
 const eu = () => db.euId;
@@ -672,7 +685,7 @@ function telaInicio() {
     html: `
       ${avisoArmazenamento()}
       <div class="inicio-topo" style="display:flex;flex-direction:column;gap:16px;padding:24px 16px 16px">
-        ${ONDAS}
+        ${lista.length ? '' : ONDAS}
         <div style="display:flex;justify-content:space-between;align-items:center">
           <h1 class="t-cabecalho m0">Grupos</h1>
           <a class="btn-icone" href="#/grupo/novo" aria-label="Criar grupo">${icone('pessoa-mais')}</a>
@@ -685,7 +698,7 @@ function telaInicio() {
           <span class="t-corpo sec">Crie um grupo para a viagem, a casa ou o que vocês dividem.</span>
           <a class="btn btn-principal btn-bloco" href="#/grupo/novo">Criar grupo</a>
         </div></div>`}
-      ${lista.length ? `<div class="fabs"><a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a></div>` : ''}`,
+      ${lista.length ? `${ONDAS_FAB}<div class="fabs"><a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a></div>` : ''}`,
     menu: 'grupos'
   };
 }
