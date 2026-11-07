@@ -125,6 +125,11 @@
   --cor-acao-selecionada-pressionada: var(--petroleo-200);
   --cor-acao-fantasma-hover: var(--neutro-50);          /* botão de ícone, botão texto, aba do menu */
   --cor-acao-fantasma-pressionada: var(--neutro-100);
+  /* Item de lista: hover e clique PINTAM POR CIMA do fundo do item, nunca trocam o fundo.
+     No escuro eles são translúcidos; num card (fundo --cor-fundo-card), trocar o fundo deixaria o card
+     transparente e mostraria o que está atrás (ex.: ondas). Em card, o card continua 100% opaco:
+       background-color: var(--cor-fundo-card);
+       background-image: linear-gradient(var(--cor-item-hover), var(--cor-item-hover)); */
   --cor-item-hover: var(--neutro-25);
   --cor-item-pressionado: var(--neutro-50);
   --cor-perigo-hover: var(--coral-50);
@@ -193,6 +198,37 @@
   --texto-titulo-pagina: var(--tamanho-48);   /* só site/portfólio, Bricolage, -2% */
   --texto-display: var(--tamanho-64);         /* só site/portfólio (hero), Bricolage, -2%, altura 110% */
 
+  /* ---------- Movimento (motion) ----------
+     Esquema "padrão" (funcional, quase sem quique). "Destaque" só em 1 ou 2 momentos
+     (saldo vira "Tudo acertado"; ondas do botão flutuante).
+     Regras:
+     - Sair é mais rápido que entrar: a saída usa a duração um nível abaixo.
+     - Nada passa de ~500ms (exceto a respiração das ondas, que é ambiente).
+     - Toque no meio de uma animação funciona na hora e reverte de onde está.
+     - Camada acima (folha de baixo, diálogo) desliza/entra e escurece o fundo;
+       mesma camada (telas, abas) troca com deslize curto + fade.
+     - Escalonamento só na 1ª vez que a lista aparece, no máximo 5 itens.
+     - Ordem ao entrar: fixo (cabeçalho, capa) → conteúdo → saldo/número → botão principal.
+     - prefers-reduced-motion: os tokens abaixo zeram deslize, escala e cascata (só fade).
+     Ondas do botão flutuante: paradas no dia a dia. Ao tocar, cada anel cresce
+     até --movimento-escala-onda e volta (de dentro para fora, --duracao-escalonamento
+     entre anéis, --duracao-destaque, --curva-padrao). Tela vazia (0 ou 1 grupo):
+     respiração lenta até --movimento-escala-respiracao em --duracao-respiracao, em loop. */
+  --duracao-toque: 100ms;         /* retorno ao tocar (afundar, escurecer fundo) */
+  --duracao-curta: 200ms;         /* abas, chips, avisos, saídas, voltar */
+  --duracao-media: 300ms;         /* abrir tela, folha de baixo, diálogo */
+  --duracao-destaque: 450ms;      /* "Tudo acertado", ondas ao tocar */
+  --duracao-escalonamento: 40ms;  /* atraso entre itens em cascata */
+  --duracao-respiracao: 6000ms;   /* ciclo da respiração das ondas (tela vazia) */
+  --curva-padrao: cubic-bezier(0.2, 0, 0, 1);       /* mudanças dentro da tela */
+  --curva-entrada: cubic-bezier(0, 0, 0, 1);        /* o que chega: rápido e pousa suave */
+  --curva-saida: cubic-bezier(0.3, 0, 1, 1);        /* o que sai: acelera e vai */
+  --curva-destaque: cubic-bezier(0.34, 1.3, 0.64, 1); /* passa um pouco do ponto e volta */
+  --movimento-deslocamento: var(--tamanho-16);  /* deslize curto de telas, abas e itens */
+  --movimento-escala-toque: 0.97;               /* botão afunda ao tocar */
+  --movimento-escala-onda: 1.07;                /* anel das ondas no pico do toque */
+  --movimento-escala-respiracao: 1.025;         /* anel das ondas no pico da respiração */
+
   color-scheme: light;
 }
 
@@ -232,7 +268,7 @@
   --cor-acao-selecionada-pressionada: #23566A;
   --cor-acao-fantasma-hover: rgba(232, 240, 238, .06);
   --cor-acao-fantasma-pressionada: rgba(232, 240, 238, .10);
-  --cor-item-hover: rgba(232, 240, 238, .04);
+  --cor-item-hover: rgba(232, 240, 238, .04);         /* translúcido: sempre por cima do fundo (ver regra no tema claro) */
   --cor-item-pressionado: rgba(232, 240, 238, .08);
   --cor-perigo-hover: rgba(240, 148, 106, .12);
   --cor-perigo-pressionado: rgba(240, 148, 106, .20);
@@ -265,4 +301,20 @@
 
   --sombra-flutuante: 0 4px 14px rgba(0, 0, 0, .45);
   --sombra-suave: 0 4px 14px rgba(0, 0, 0, .35);
+}
+
+/* =====================================================================
+   Menos movimento — quem pede no celular (prefers-reduced-motion) recebe só fade curto:
+   sem deslize, sem escala, sem cascata, sem quique e sem respiração das ondas.
+   As durações continuam valendo para os fades.
+   ===================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --movimento-deslocamento: 0px;
+    --movimento-escala-toque: 1;
+    --movimento-escala-onda: 1;
+    --movimento-escala-respiracao: 1;
+    --duracao-escalonamento: 0ms;
+    --curva-destaque: var(--curva-padrao);
+  }
 }
