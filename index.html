@@ -608,7 +608,7 @@ const ONDAS = `<svg class="ondas" viewBox="0 0 260 260" aria-hidden="true">
   <circle cx="130" cy="130" r="30" stroke-opacity=".22"/><circle cx="130" cy="130" r="58" stroke-opacity=".15"/>
   <circle cx="130" cy="130" r="88" stroke-opacity=".10"/><circle cx="130" cy="130" r="120" stroke-opacity=".06"/></svg>`;
 // Versão maior, com um anel a mais, que sai de trás do botão flutuante da tela inicial.
-// Com 0 ou 1 grupo a tela fica vazia e as ondas "respiram" devagar.
+// As ondas "respiram" devagar sempre que aparecem (com qualquer número de grupos).
 // Anéis: [raio, opacidade], centrados num quadro de 520px (mesmo desenho do componente Ondas/Botão flutuante).
 const ANEIS_FAB = [[40, .22], [80, .15], [125, .10], [175, .06], [230, .04]];
 const ondasFab = respira => `<div class="ondas-fab${respira ? ' respira' : ''}" aria-hidden="true"><canvas class="ondas" width="520" height="520"></canvas></div>`;
@@ -791,7 +791,7 @@ function coreografar(tipo) {
   requestAnimationFrame(() => requestAnimationFrame(() => este.classList.add('pronto')));
 }
 /* Ondas do botão flutuante, desenhadas num canvas a cada quadro, no tamanho exato (lisas em qualquer tela).
-   Respiração (tela vazia): cada anel cresce até --movimento-escala-respiracao e volta em --duracao-respiracao,
+   Respiração (sempre): cada anel cresce até --movimento-escala-respiracao e volta em --duracao-respiracao,
    em loop, com os anéis defasados em 1/12 do ciclo. Pulso (toque no botão): cada anel cresce até
    --movimento-escala-onda e volta em --duracao-destaque, com --curva-padrao, de dentro para fora
    (--duracao-escalonamento entre anéis). Os dois se multiplicam, então o pulso não reinicia a respiração.
@@ -806,10 +806,9 @@ function curvaCss(nome) {
     return bz(y1, y2, (lo + hi) / 2);
   };
 }
-/* Hover (EXPERIMENTO, só com mouse): com o ponteiro sobre o botão, os anéis crescem um pouco (bem menos que
-   o toque) e ficam um pouco mais visíveis, de dentro para fora; ao sair, voltam. Se aprovado, ESCALA_HOVER
-   vira o token --movimento-escala-hover no DS. */
-const ESCALA_HOVER = 1.03, REALCE_HOVER = 0.6;
+/* Hover (só com mouse): com o ponteiro sobre o botão, os anéis crescem um pouco (bem menos que o toque)
+   e ficam um pouco mais visíveis, de dentro para fora; ao sair, voltam.
+   Valores nos tokens do DS: --movimento-escala-hover e --movimento-realce-hover. */
 const ondasAnim = { quadro: 0, pulsoEm: -Infinity, hover: false, hoverDesde: -Infinity, v: ANEIS_FAB.map(() => 0), ultimoT: 0 };
 function desenharOndas(t) {
   const cv = document.querySelector('.ondas-fab canvas.ondas');
@@ -825,6 +824,7 @@ function desenharOndas(t) {
   const respira = !calmo && cv.parentElement.classList.contains('respira');
   const T = ms('--duracao-respiracao') || 6000, D = ms('--duracao-destaque') || 450, E = ms('--duracao-escalonamento');
   const sResp = ms('--movimento-escala-respiracao') || 1, sOnda = ms('--movimento-escala-onda') || 1;
+  const sHover = ms('--movimento-escala-hover') || 1, realceHover = ms('--movimento-realce-hover');
   const curva = ondasAnim.curva || (ondasAnim.curva = curvaCss('--curva-padrao'));
   let pulsando = false, mexendo = false;
   const dt = Math.min(Math.max(t - ondasAnim.ultimoT, 0), 50); ondasAnim.ultimoT = t;
@@ -837,19 +837,21 @@ function desenharOndas(t) {
     ondasAnim.v[n] += (alvo - ondasAnim.v[n]) * passoH;
     if (Math.abs(alvo - ondasAnim.v[n]) > 0.002 || !virou) mexendo = true; else ondasAnim.v[n] = alvo;
     const h = ondasAnim.v[n];
-    s *= 1 + (ESCALA_HOVER - 1) * h;
+    s *= 1 + (sHover - 1) * h;
     if (respira) { const fase = (((t + n * T / 12) % T) + T) % T / T; s *= 1 + (sResp - 1) * (1 - Math.cos(2 * Math.PI * fase)) / 2; }
     const p = calmo ? -1 : (t - ondasAnim.pulsoEm - n * E) / D;
     if (p >= 0 && p < 1) { pulsando = true; s *= 1 + (sOnda - 1) * curva(p < 0.5 ? p * 2 : (1 - p) * 2); }
-    else if (p < 0 && t - ondasAnim.pulsoEm >= 0) pulsando = true;
-    ctx.globalAlpha = Math.min(1, o * (1 + REALCE_HOVER * h));
+    else if (p < 0 && t - ondasAnim.pulsoEm > -100) pulsando = true; // pulso acabou de ser pedido: segue animando
+    ctx.globalAlpha = Math.min(1, o * (1 + realceHover * h));
     ctx.beginPath(); ctx.arc(lado / 2, lado / 2, r * s, 0, 2 * Math.PI); ctx.stroke();
   });
   return respira || pulsando || mexendo;
 }
 function animarOndas() {
   if (ondasAnim.quadro) return;
-  const passo = t => { ondasAnim.quadro = 0; if (desenharOndas(t)) ondasAnim.quadro = requestAnimationFrame(passo); };
+  // Usa sempre performance.now(): o horário que o quadro recebe pode ser um pouco ANTERIOR ao toque, e aí
+  // o pulso parecia "ainda não começou", o laço parava e o toque não animava (falhava ~metade das vezes).
+  const passo = () => { ondasAnim.quadro = 0; if (desenharOndas(performance.now())) ondasAnim.quadro = requestAnimationFrame(passo); };
   ondasAnim.quadro = requestAnimationFrame(passo);
 }
 // Tema trocado (pelo app ou pelo sistema) muda a cor dos anéis: redesenha.
@@ -1004,7 +1006,7 @@ function telaInicio() {
         <div style="display:flex;flex-direction:column;gap:4px">${saldoGeral}</div>
       </div>
       <div class="lista-cards">${itens}</div>
-      ${ondasFab(lista.length < 2)}
+      ${ondasFab(true)}
       <div class="fabs"><a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a></div>` : `
       <div style="padding:24px 16px 8px"><h1 class="t-cabecalho m0">Grupos</h1></div>
       <div style="padding:16px"><div class="cartao centro">

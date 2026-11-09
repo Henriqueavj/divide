@@ -210,16 +210,20 @@
      - Escalonamento só na 1ª vez que a lista aparece, no máximo 5 itens.
      - Ordem ao entrar: fixo (cabeçalho, capa) → conteúdo → saldo/número → botão principal.
      - prefers-reduced-motion: os tokens abaixo zeram deslize, escala e cascata (só fade).
-     Ondas do botão flutuante: paradas no dia a dia. Ao tocar, cada anel cresce
-     até --movimento-escala-onda e volta (de dentro para fora, --duracao-escalonamento
-     entre anéis, --duracao-destaque, --curva-padrao). Tela vazia (0 ou 1 grupo):
-     respiração lenta até --movimento-escala-respiracao em --duracao-respiracao, em loop. */
+     Ondas do botão flutuante: respiram sempre, em qualquer quantidade de grupos — respiração
+     lenta e contínua até --movimento-escala-respiracao em --duracao-respiracao, em loop,
+     um pouco defasada entre os anéis. Ao tocar, cada anel cresce até --movimento-escala-onda
+     e volta (de dentro para fora, --duracao-escalonamento entre anéis, --duracao-destaque,
+     --curva-padrao), somando-se à respiração sem interrompê-la.
+     Hover (só com mouse) no botão flutuante: cada anel cresce até --movimento-escala-hover e a
+     opacidade sobe --movimento-realce-hover (0.6 = ×1,6), de dentro para fora (1,5× --duracao-escalonamento
+     entre anéis), aproximando-se suave em cerca de --duracao-media; ao tirar o mouse, volta igual. */
   --duracao-toque: 100ms;         /* retorno ao tocar (afundar, escurecer fundo) */
   --duracao-curta: 200ms;         /* abas, chips, avisos, saídas, voltar */
   --duracao-media: 300ms;         /* abrir tela, folha de baixo, diálogo */
   --duracao-destaque: 450ms;      /* "Tudo acertado", ondas ao tocar */
   --duracao-escalonamento: 40ms;  /* atraso entre itens em cascata */
-  --duracao-respiracao: 6000ms;   /* ciclo da respiração das ondas (tela vazia) */
+  --duracao-respiracao: 6000ms;   /* ciclo da respiração das ondas (contínua, sempre) */
   --curva-padrao: cubic-bezier(0.2, 0, 0, 1);       /* mudanças dentro da tela */
   --curva-entrada: cubic-bezier(0, 0, 0, 1);        /* o que chega: rápido e pousa suave */
   --curva-saida: cubic-bezier(0.3, 0, 1, 1);        /* o que sai: acelera e vai */
@@ -228,6 +232,8 @@
   --movimento-escala-toque: 0.97;               /* botão afunda ao tocar */
   --movimento-escala-onda: 1.07;                /* anel das ondas no pico do toque */
   --movimento-escala-respiracao: 1.025;         /* anel das ondas no pico da respiração */
+  --movimento-escala-hover: 1.03;               /* anel das ondas com o mouse sobre o botão flutuante */
+  --movimento-realce-hover: 0.6;                /* quanto a opacidade dos anéis sobe no hover (0.6 = +60%) */
 
   color-scheme: light;
 }
@@ -314,6 +320,7 @@
     --movimento-escala-toque: 1;
     --movimento-escala-onda: 1;
     --movimento-escala-respiracao: 1;
+    --movimento-escala-hover: 1;
     --duracao-escalonamento: 0ms;
     --curva-destaque: var(--curva-padrao);
   }
