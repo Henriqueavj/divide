@@ -234,9 +234,9 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
   width: 100%; max-width: 480px; overflow: hidden; pointer-events: none; z-index: -1;
 }
 .ondas-fab .ondas { position: absolute; width: 520px; height: 520px; right: -216px; bottom: calc(env(safe-area-inset-bottom) - 155px); }
-/* Os anéis do botão flutuante são elementos HTML (não círculos de SVG): assim o navegador anima a escala
-   na placa de vídeo, liso, sem "degraus" de pixel na respiração lenta. */
-.ondas-fab .anel { position: absolute; border: 1.5px solid var(--cor-acao-principal); border-radius: 50%; will-change: transform, scale; }
+/* Os anéis do botão flutuante são desenhados num canvas (ver desenharOndas). Ampliar uma "imagem" de anel fino
+   em frações de pixel dava degraus e brilhos (raios) na respiração lenta; no canvas cada quadro é redesenhado
+   no tamanho exato. */
 .resumo { padding: var(--espaco-md) var(--espaco-md) var(--espaco-xs); display: flex; flex-direction: column; gap: var(--espaco-sm); }
 .resumo .linhas { display: flex; flex-direction: column; gap: 2px; }
 
@@ -381,27 +381,20 @@ body.com-menu .fabs { bottom: calc(80px + env(safe-area-inset-bottom)); }
 }
 .valor-total.troca { animation: aparece var(--duracao-media) var(--curva-padrao) var(--duracao-curta) backwards; }
 
-/* Ondas. Tocar no botão flutuante: cada anel cresce e volta, de dentro para fora.
-   Tela vazia (0 ou 1 grupo): respiração lenta e defasada. O pulso usa transform e a respiração usa scale,
-   então os dois somam sem a respiração recomeçar. */
+/* Ondas da capa: no "Tudo acertado" cada anel cresce e volta uma vez, de dentro para fora.
+   (As ondas do botão flutuante, com o pulso ao tocar e a respiração da tela vazia, são animadas em desenharOndas.) */
 .ondas > * { transform-box: fill-box; transform-origin: center; }
 .ondas > *:nth-child(2) { --n: 1; } .ondas > *:nth-child(3) { --n: 2; }
 .ondas > *:nth-child(4) { --n: 3; } .ondas > *:nth-child(5) { --n: 4; }
 @keyframes onda-pulso { 50% { transform: scale(var(--movimento-escala-onda)); } }
-@keyframes onda-respira { 50% { scale: var(--movimento-escala-respiracao); } }
 .ondas.pulso > * { animation: onda-pulso var(--duracao-destaque) var(--curva-padrao); animation-delay: calc(var(--n, 0) * var(--duracao-escalonamento)); }
-.ondas-fab.respira .ondas > * { animation: onda-respira var(--duracao-respiracao) ease-in-out infinite; animation-delay: calc(var(--n, 0) * var(--duracao-respiracao) / -12); }
-.ondas-fab.respira .ondas.pulso > * {
-  animation: onda-respira var(--duracao-respiracao) ease-in-out infinite, onda-pulso var(--duracao-destaque) var(--curva-padrao);
-  animation-delay: calc(var(--n, 0) * var(--duracao-respiracao) / -12), calc(var(--n, 0) * var(--duracao-escalonamento));
-}
 /* "Tudo acertado": único momento expressivo. O selo entra com a curva de destaque e as ondas da capa pulsam uma vez. */
 @keyframes selo-entra { from { opacity: 0; transform: scale(.6); } }
 .selo.festeja { animation: selo-entra var(--duracao-destaque) var(--curva-destaque) var(--duracao-media) backwards; }
 .capa-grande .ondas.pulso > * { animation-delay: calc(var(--duracao-media) + var(--n, 0) * var(--duracao-escalonamento)); }
 
 @media (prefers-reduced-motion: reduce) {
-  .ondas > *, .ondas.pulso > *, .ondas-fab.respira .ondas > *, .ondas-fab.respira .ondas.pulso > * { animation: none; }
+  .ondas > *, .ondas.pulso > * { animation: none; }
   .fundo-sheet .sheet, .fundo-sheet.saindo .sheet { animation: none; }
   .selo.festeja { animation-name: aparece; }
 }
@@ -618,8 +611,7 @@ const ONDAS = `<svg class="ondas" viewBox="0 0 260 260" aria-hidden="true">
 // Com 0 ou 1 grupo a tela fica vazia e as ondas "respiram" devagar.
 // Anéis: [raio, opacidade], centrados num quadro de 520px (mesmo desenho do componente Ondas/Botão flutuante).
 const ANEIS_FAB = [[40, .22], [80, .15], [125, .10], [175, .06], [230, .04]];
-const ondasFab = respira => `<div class="ondas-fab${respira ? ' respira' : ''}" aria-hidden="true"><div class="ondas">${
-  ANEIS_FAB.map(([r, o]) => `<span class="anel" style="left:${260 - r}px;top:${260 - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${o}"></span>`).join('')}</div></div>`;
+const ondasFab = respira => `<div class="ondas-fab${respira ? ' respira' : ''}" aria-hidden="true"><canvas class="ondas" width="520" height="520"></canvas></div>`;
 
 /* ================= Consultas ================= */
 const eu = () => db.euId;
@@ -798,16 +790,91 @@ function coreografar(tipo) {
   const este = app;
   requestAnimationFrame(() => requestAnimationFrame(() => este.classList.add('pronto')));
 }
-// Ondas do botão flutuante: os anéis existentes crescem e voltam, de dentro para fora.
+/* Ondas do botão flutuante, desenhadas num canvas a cada quadro, no tamanho exato (lisas em qualquer tela).
+   Respiração (tela vazia): cada anel cresce até --movimento-escala-respiracao e volta em --duracao-respiracao,
+   em loop, com os anéis defasados em 1/12 do ciclo. Pulso (toque no botão): cada anel cresce até
+   --movimento-escala-onda e volta em --duracao-destaque, com --curva-padrao, de dentro para fora
+   (--duracao-escalonamento entre anéis). Os dois se multiplicam, então o pulso não reinicia a respiração.
+   Sem respiração nem pulso, desenha uma vez e para. */
+function curvaCss(nome) {
+  const m = (getComputedStyle(document.documentElement).getPropertyValue(nome).match(/cubic-bezier\(([^)]+)\)/) || [])[1];
+  const [x1, y1, x2, y2] = m ? m.split(',').map(Number) : [0.25, 0.1, 0.25, 1];
+  const bz = (a, b, t) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
+  return x => { // acha t com x(t) = x por bisseção e devolve y(t)
+    let lo = 0, hi = 1;
+    for (let i = 0; i < 20; i++) { const t = (lo + hi) / 2; if (bz(x1, x2, t) < x) lo = t; else hi = t; }
+    return bz(y1, y2, (lo + hi) / 2);
+  };
+}
+/* Hover (EXPERIMENTO, só com mouse): com o ponteiro sobre o botão, os anéis crescem um pouco (bem menos que
+   o toque) e ficam um pouco mais visíveis, de dentro para fora; ao sair, voltam. Se aprovado, ESCALA_HOVER
+   vira o token --movimento-escala-hover no DS. */
+const ESCALA_HOVER = 1.03, REALCE_HOVER = 0.6;
+const ondasAnim = { quadro: 0, pulsoEm: -Infinity, hover: false, hoverDesde: -Infinity, v: ANEIS_FAB.map(() => 0), ultimoT: 0 };
+function desenharOndas(t) {
+  const cv = document.querySelector('.ondas-fab canvas.ondas');
+  if (!cv) return false;
+  const lado = 520, dpr = Math.min(window.devicePixelRatio || 1, 3), px = Math.round(lado * dpr);
+  if (cv.width !== px) { cv.width = px; cv.height = px; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, lado, lado);
+  ctx.strokeStyle = getComputedStyle(cv).getPropertyValue('--cor-acao-principal').trim() || '#0A4359';
+  ctx.lineWidth = 1.5;
+  const calmo = menosMovimento();
+  const respira = !calmo && cv.parentElement.classList.contains('respira');
+  const T = ms('--duracao-respiracao') || 6000, D = ms('--duracao-destaque') || 450, E = ms('--duracao-escalonamento');
+  const sResp = ms('--movimento-escala-respiracao') || 1, sOnda = ms('--movimento-escala-onda') || 1;
+  const curva = ondasAnim.curva || (ondasAnim.curva = curvaCss('--curva-padrao'));
+  let pulsando = false, mexendo = false;
+  const dt = Math.min(Math.max(t - ondasAnim.ultimoT, 0), 50); ondasAnim.ultimoT = t;
+  const tau = (ms('--duracao-media') || 250) / 3, passoH = 1 - Math.exp(-dt / tau), EH = Math.max(E, 20) * 1.5;
+  ANEIS_FAB.forEach(([r, o], n) => {
+    let s = 1;
+    // Hover: cada anel vai para o alvo (1 = dentro, 0 = fora) depois do seu atraso, num movimento suave.
+    const virou = t - ondasAnim.hoverDesde >= n * EH;
+    const alvo = calmo ? 0 : (ondasAnim.hover === virou ? 1 : 0);
+    ondasAnim.v[n] += (alvo - ondasAnim.v[n]) * passoH;
+    if (Math.abs(alvo - ondasAnim.v[n]) > 0.002 || !virou) mexendo = true; else ondasAnim.v[n] = alvo;
+    const h = ondasAnim.v[n];
+    s *= 1 + (ESCALA_HOVER - 1) * h;
+    if (respira) { const fase = (((t + n * T / 12) % T) + T) % T / T; s *= 1 + (sResp - 1) * (1 - Math.cos(2 * Math.PI * fase)) / 2; }
+    const p = calmo ? -1 : (t - ondasAnim.pulsoEm - n * E) / D;
+    if (p >= 0 && p < 1) { pulsando = true; s *= 1 + (sOnda - 1) * curva(p < 0.5 ? p * 2 : (1 - p) * 2); }
+    else if (p < 0 && t - ondasAnim.pulsoEm >= 0) pulsando = true;
+    ctx.globalAlpha = Math.min(1, o * (1 + REALCE_HOVER * h));
+    ctx.beginPath(); ctx.arc(lado / 2, lado / 2, r * s, 0, 2 * Math.PI); ctx.stroke();
+  });
+  return respira || pulsando || mexendo;
+}
+function animarOndas() {
+  if (ondasAnim.quadro) return;
+  const passo = t => { ondasAnim.quadro = 0; if (desenharOndas(t)) ondasAnim.quadro = requestAnimationFrame(passo); };
+  ondasAnim.quadro = requestAnimationFrame(passo);
+}
+// Tema trocado (pelo app ou pelo sistema) muda a cor dos anéis: redesenha.
+new MutationObserver(animarOndas).observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', animarOndas);
 function pulsarOndas() {
-  const svg = document.querySelector('.ondas-fab .ondas');
-  if (!svg || menosMovimento()) return false;
-  svg.classList.remove('pulso'); void svg.getBoundingClientRect(); svg.classList.add('pulso');
-  clearTimeout(pulsarOndas.t);
-  pulsarOndas.t = setTimeout(() => svg.classList.remove('pulso'), ms('--duracao-destaque') + 5 * ms('--duracao-escalonamento'));
+  if (!document.querySelector('.ondas-fab canvas.ondas') || menosMovimento()) return false;
+  ondasAnim.pulsoEm = performance.now();
+  animarOndas();
   return true;
 }
 document.addEventListener('pointerdown', e => { if (e.target.closest('.fab.btn-principal')) pulsarOndas.ultimo = pulsarOndas() && Date.now(); });
+// Hover só com mouse (no celular não existe "passar por cima").
+function hoverOndas(dentro) {
+  if (ondasAnim.hover === dentro) return;
+  const t = performance.now();
+  // Se mudou no meio do caminho, os anéis que ainda não tinham virado já estão no lugar certo: começa sem atraso.
+  ondasAnim.hover = dentro; ondasAnim.hoverDesde = t;
+  animarOndas();
+}
+document.addEventListener('pointerover', e => { if (e.pointerType === 'mouse' && e.target.closest('.fab.btn-principal')) hoverOndas(true); });
+document.addEventListener('pointerout', e => {
+  const fab = e.target.closest('.fab.btn-principal');
+  if (e.pointerType === 'mouse' && fab && !fab.contains(e.relatedTarget)) hoverOndas(false);
+});
 // O toque já mostra o pulso; a troca de tela espera só um instante para ele ser visto.
 document.addEventListener('click', e => {
   const fab = e.target.closest('.fab.btn-principal');
@@ -1871,6 +1938,10 @@ function render() {
   else delete app.dataset.entrada;
   destaqueId = null; momento = null;
   tela.ligar && tela.ligar();
+  // Tela nova: o botão foi trocado, então o hover recomeça do zero.
+  ondasAnim.hover = false; ondasAnim.hoverDesde = -Infinity; ondasAnim.v.fill(0);
+  // Desenha as ondas já no primeiro quadro (sem piscar vazio) e segue animando se precisar.
+  if (desenharOndas(performance.now())) animarOndas();
   if (rotaAtual !== rotaAnterior) window.scrollTo(0, 0);
   rotaAnterior = rotaAtual;
   posicionarToast();
