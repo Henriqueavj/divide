@@ -38,8 +38,8 @@
   --neutro-50: #F0F3F2;
   --neutro-100: #E3E8E6;
   --neutro-200: #D3DAD8;
-  --neutro-400: #9AA6A3;
-  --neutro-500: #75827F;
+  --neutro-400: #7F8C89;      /* borda forte: 3,5:1 no branco (WCAG 1.4.11) */
+  --neutro-500: #657270;      /* texto terciário: 5:1 no branco */
   --neutro-600: #52605D;
   --neutro-800: #24332F;
   --neutro-900: #10201E;
@@ -54,13 +54,13 @@
   --petroleo-950: #093B4E;   /* pressionado da ação principal (900 + 12% de preto) */
 
   --verde-50: #E3F5EC;
-  --verde-700: #1E8A5B;
+  --verde-700: #1A7A51;      /* saldo positivo: 5,3:1 no branco */
   --verde-marca: #2CC799;
 
   --coral-50: #FBEDE4;
   --coral-100: #F6D9C7;
   --coral-300: #F0946A;      /* ícone de erro sobre fundo escuro */
-  --coral-700: #C2571A;
+  --coral-700: #B04E14;      /* saldo negativo: 5,3:1 no branco */
 
   --menta-100: #D3ECE2;
   --ameixa-100: #EADFEA;
@@ -73,7 +73,7 @@
   --noite-900: #0C2630;      /* superfície */
   --noite-850: #12303B;      /* destaque / superfície elevada */
   --noite-800: #1A3B47;      /* borda padrão */
-  --noite-700: #2E5260;      /* borda forte */
+  --noite-700: #52788A;      /* borda forte: 3,3:1 no card */
   --noite-500: #6E8C97;      /* borda hover */
 
   /* ---------- Primitivos: medidas ---------- */
