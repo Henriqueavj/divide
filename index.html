@@ -180,6 +180,25 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 /* Card que não é clicável (ex.: amigos): sem o realce de hover/toque */
 .lista-cards .item.estatico { cursor: default; }
 .lista-cards .item.estatico:hover, .lista-cards .item.estatico:active { background-image: none !important; }
+
+/* Carregando · Lista (DS): um brilho só atravessa a lista inteira (background-attachment: fixed faz
+   os blocos dividirem a mesma faixa). Começa após --duracao-media para não piscar em esperas curtas;
+   com menos movimento, --duracao-brilho é 0 e os blocos ficam parados. Ver htmlEsqueleto(). */
+.esqueleto { animation: aparece var(--duracao-curta) var(--curva-entrada) both; }
+.esqueleto.saindo { animation: some var(--duracao-curta) var(--curva-saida) forwards; }
+.esqueleto .bloco {
+  display: block; flex: none; border-radius: var(--raio-pilula);
+  background-color: var(--cor-fundo-destaque);
+  background-image: linear-gradient(100deg, transparent 30%, var(--cor-brilho) 50%, transparent 70%);
+  background-size: 200vw 100%; background-repeat: no-repeat; background-attachment: fixed;
+  animation: brilho var(--duracao-brilho) var(--curva-padrao) var(--duracao-media) infinite;
+}
+.esqueleto .item-textos { display: flex; flex-direction: column; gap: var(--espaco-xs); flex: 1; }
+.esqueleto .bloco-avatar { width: 40px; height: 40px; }
+.esqueleto .bloco-linha { height: 12px; }
+.esqueleto .bloco-apoio { height: 10px; width: 45%; }
+.esqueleto .bloco-valor { width: 56px; height: 14px; }
+@keyframes brilho { from { background-position: 100vw 0; } to { background-position: -100vw 0; } }
 /* Menu suspenso (Meu Design System): seletor em pílula; a lista abre 8px abaixo, sobre o conteúdo */
 .menu-suspenso { position: relative; }
 .menu-suspenso-seletor {
@@ -918,6 +937,21 @@ function mostrarCarregando(texto) {
     tela.classList.add('saindo');
     setTimeout(() => { tela.remove(); ok(); }, ms('--duracao-curta'));
   }, Math.max(0, 1400 - (performance.now() - desde))));
+}
+
+// Carregando · Lista (DS): blocos no formato dos cards enquanto uma lista chega de fora
+// (ex.: grupos vindos da sincronia). Hoje os dados são locais e chegam na hora, então nada
+// usa ainda; não crie espera falsa. Uso: el.innerHTML = htmlEsqueleto(4, 'Carregando grupos');
+// quando chegar: el.querySelector('.esqueleto')?.classList.add('saindo') e, após --duracao-curta,
+// desenhe a lista (os itens .lista-cards já entram em cascata).
+function htmlEsqueleto(n = 4, rotulo = 'Carregando') {
+  const larguras = [62, 48, 70, 54, 58];
+  return `<div class="lista-cards esqueleto" role="status" aria-label="${esc(rotulo)}">${
+    Array.from({ length: n }, (_, i) => `<div class="item estatico" aria-hidden="true">
+      <span class="bloco bloco-avatar"></span>
+      <span class="item-textos"><span class="bloco bloco-linha" style="width:${larguras[i % 5]}%"></span><span class="bloco bloco-apoio"></span></span>
+      <span class="bloco bloco-valor"></span></div>`).join('')
+  }</div>`;
 }
 
 /* ================= Consultas ================= */

@@ -134,6 +134,7 @@
        background-image: linear-gradient(var(--cor-item-hover), var(--cor-item-hover)); */
   --cor-item-hover: var(--neutro-25);
   --cor-item-pressionado: var(--neutro-50);
+  --cor-brilho: rgba(255, 255, 255, .75);   /* faixa de luz do esqueleto (Carregando · Lista) */
   --cor-perigo-hover: var(--coral-50);
   --cor-perigo-pressionado: var(--coral-100);
   --opacidade-desativado: .45;
@@ -233,6 +234,7 @@
   --duracao-destaque: 450ms;      /* "Tudo acertado", ondas ao tocar */
   --duracao-escalonamento: 40ms;  /* atraso entre itens em cascata */
   --duracao-respiracao: 6000ms;   /* ciclo da respiração das ondas (contínua, sempre) */
+  --duracao-brilho: 1600ms;       /* uma passada do brilho no esqueleto; começa após --duracao-media */
   --curva-padrao: cubic-bezier(0.2, 0, 0, 1);       /* mudanças dentro da tela */
   --curva-entrada: cubic-bezier(0, 0, 0, 1);        /* o que chega: rápido e pousa suave */
   --curva-saida: cubic-bezier(0.3, 0, 1, 1);        /* o que sai: acelera e vai */
@@ -286,6 +288,7 @@
   --cor-acao-fantasma-pressionada: rgba(232, 240, 238, .10);
   --cor-item-hover: rgba(232, 240, 238, .04);         /* translúcido: sempre por cima do fundo (ver regra no tema claro) */
   --cor-item-pressionado: rgba(232, 240, 238, .08);
+  --cor-brilho: rgba(232, 240, 238, .07);   /* bem fraco: não ofusca no fundo quase preto */
   --cor-perigo-hover: rgba(240, 148, 106, .12);
   --cor-perigo-pressionado: rgba(240, 148, 106, .20);
 
@@ -337,6 +340,7 @@
     --movimento-escala-respiracao: 1;
     --movimento-escala-hover: 1;
     --duracao-escalonamento: 0ms;
+    --duracao-brilho: 0ms;        /* esqueleto parado, sem brilho */
     --curva-destaque: var(--curva-padrao);
   }
 }
