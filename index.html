@@ -177,6 +177,33 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
 #app.fundo-cinza { background: var(--cor-fundo-grupo); }
 .fundo-cinza .cartao, .fundo-cinza .resumo-total, .card-lista { background: var(--cor-fundo-card); box-shadow: var(--sombra-suave); }
 .card-lista { margin: 0 var(--espaco-md) var(--espaco-md); border-radius: var(--raio-lg); overflow: hidden; }
+/* Card que não é clicável (ex.: amigos): sem o realce de hover/toque */
+.lista-cards .item.estatico { cursor: default; }
+.lista-cards .item.estatico:hover, .lista-cards .item.estatico:active { background-image: none !important; }
+/* Menu suspenso (Meu Design System): seletor em pílula; a lista abre 8px abaixo, sobre o conteúdo */
+.menu-suspenso { position: relative; }
+.menu-suspenso-seletor {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-xs); width: 100%;
+  padding: 12px 20px 12px 24px; border-radius: var(--raio-pilula); cursor: pointer;
+  background: var(--cor-acao-secundaria); color: var(--cor-texto-principal); border: 1px solid var(--cor-borda-forte);
+  font: inherit; font-size: var(--texto-corpo-grande); font-weight: 600; text-align: left;
+}
+.menu-suspenso-seletor .seta { width: 14px; height: 8px; flex: none; transition: transform var(--duracao-curta, .15s) ease; }
+.menu-suspenso-seletor[aria-expanded="true"] .seta { transform: rotate(180deg); }
+.menu-suspenso-lista {
+  position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 8;
+  display: flex; flex-direction: column; gap: 4px; padding: 8px;
+  background: var(--cor-fundo-flutuante); border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-lg); box-shadow: var(--sombra-flutuante);
+  scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom)); /* rola acima do menu inferior ao abrir */
+}
+.menu-suspenso-item {
+  display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 12px;
+  border: 0; border-radius: var(--raio-md); background: none; color: var(--cor-texto-principal);
+  font: inherit; text-align: left; cursor: pointer;
+}
+.menu-suspenso-item:active { background: var(--cor-item-pressionado); }
+@media (hover: hover) { .menu-suspenso-item:hover { background: var(--cor-item-hover); } .menu-suspenso-seletor:hover { background: var(--cor-acao-secundaria-hover); } }
 /* Rótulo pequeno acima do nome do grupo (VIAGEM, CASA...) */
 .grade-partes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--espaco-md); }
 .grade-partes .campo { min-width: 0; }
@@ -271,7 +298,7 @@ select.campo-entrada { background: transparent url("data:image/svg+xml,%3Csvg xm
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 7;
   width: 100%; max-width: 480px; display: flex;
   padding: 0 var(--espaco-xs) env(safe-area-inset-bottom);
-  background: var(--cor-fundo-pagina); border-top: 1px solid var(--cor-borda-padrao);
+  background: var(--cor-fundo-card); border-top: 1px solid var(--cor-borda-padrao);
 }
 .menu-aba {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--espaco-xxs);
@@ -1994,7 +2021,7 @@ function telaAmigos() {
     const dir = saldo > 0 ? `<span class="t-legenda pos">recebe</span><span class="t-corpo-forte pos">${dinheiro(saldo)}</span>`
       : saldo < 0 ? `<span class="t-legenda neg">deve</span><span class="t-corpo-forte neg">${dinheiro(-saldo)}</span>`
         : `<span class="t-legenda ter">quitado</span>`;
-    return `<div class="item" style="gap:12px;cursor:default">
+    return `<div class="item estatico" style="gap:12px">
       <span class="avatar">${esc(iniciaisNoGrupo(id, ids))}</span>
       <span class="item-textos"><span class="t-cg cortar">${esc(nomeDe(id))}</span><span class="t-legenda sec">${n === 1 ? 'em 1 grupo' : `em ${n} grupos`}</span></span>
       <span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">${dir}</span>
@@ -2003,7 +2030,7 @@ function telaAmigos() {
   return {
     html: `
       <div style="padding:24px 16px 8px"><h1 class="t-cabecalho m0">Amigos</h1></div>
-      ${ids.length ? linhas : `<div style="padding:16px"><div class="cartao centro">
+      ${ids.length ? `<div class="lista-cards">${linhas}</div>` : `<div style="padding:16px"><div class="cartao centro">
         ${icone('pessoa')}
         <span class="t-cg-forte">Ninguém por aqui ainda</span>
         <span class="t-corpo sec">As pessoas que você adiciona nos grupos aparecem aqui, com o saldo de todos os grupos somado.</span>
@@ -2112,16 +2139,25 @@ function telaConta() {
           <span class="t-corpo sec">Automático segue o modo claro ou escuro do celular.</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:12px">
-          <span class="t-cg-forte">Levar para outro aparelho</span>
-          <span class="t-corpo sec">Gera um arquivo com todos os grupos e gastos. Use para abrir no PC ou guardar como cópia de segurança.</span>
-          <button class="btn btn-secundario btn-bloco" type="button" data-acao="exportar">Exportar dados</button>
+          <span class="t-cg-forte" id="dados-rotulo">Seus dados</span>
+          <span class="t-corpo sec">Leve seus grupos e gastos para outro aparelho, ou traga de lá. Tudo fica salvo só neste aparelho.</span>
+          <div class="menu-suspenso">
+            <button class="menu-suspenso-seletor" type="button" id="dados-seletor" aria-haspopup="menu" aria-expanded="false" aria-controls="dados-lista">
+              <span>Exportar ou importar</span>
+              <svg class="seta" viewBox="0 0 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6 6-6"/></svg>
+            </button>
+            <div class="menu-suspenso-lista oculto" id="dados-lista" role="menu" aria-labelledby="dados-seletor">
+              <button class="menu-suspenso-item" type="button" role="menuitem" data-acao="exportar">
+                <span class="t-cg-forte">Exportar dados</span>
+                <span class="t-corpo sec">Gera um arquivo com todos os grupos e gastos.</span>
+              </button>
+              <button class="menu-suspenso-item" type="button" role="menuitem" data-acao="importar">
+                <span class="t-cg-forte">Importar dados</span>
+                <span class="t-corpo sec">Substitui os dados deste aparelho pelos do arquivo.</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <span class="t-cg-forte">Trazer de outro aparelho</span>
-          <span class="t-corpo sec">Abre um arquivo exportado. Os dados deste aparelho serão substituídos pelos do arquivo.</span>
-          <button class="btn btn-secundario btn-bloco" type="button" data-acao="importar">Importar dados</button>
-        </div>
-        <p class="nota m0">Tudo fica salvo só neste aparelho. Limpar os dados do navegador apaga os grupos, então exporte de vez em quando.</p>
       </form>`,
     ligar() {
       const f = document.getElementById('f');
@@ -2139,9 +2175,41 @@ function telaConta() {
         f.querySelectorAll('[data-escolha-tema]').forEach(o => { const sim = o === bt; o.classList.toggle('ativa', sim); o.setAttribute('aria-checked', String(sim)); });
       }));
       f.querySelector('[data-acao="exportar"]').addEventListener('click', exportar);
+      ligarMenuSuspenso(document.getElementById('dados-seletor'), document.getElementById('dados-lista'));
     },
     menu: 'conta'
   };
+}
+// Menu suspenso: abre e fecha no seletor; fecha ao escolher um item, ao tocar fora ou com Esc.
+// Setas para cima e para baixo andam entre os itens.
+function ligarMenuSuspenso(seletor, lista) {
+  const itens = () => [...lista.querySelectorAll('[role="menuitem"]')];
+  const aberto = () => seletor.getAttribute('aria-expanded') === 'true';
+  function abrir(focarPrimeiro) {
+    lista.classList.remove('oculto'); seletor.setAttribute('aria-expanded', 'true');
+    // a lista flutua sem ocupar altura: reserva o espaço dela embaixo para a página poder rolar até ela
+    seletor.parentElement.style.marginBottom = (lista.offsetHeight + 8) + 'px';
+    lista.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (focarPrimeiro) itens()[0].focus({ preventScroll: true });
+    document.addEventListener('pointerdown', fora, true);
+  }
+  function fechar(devolverFoco) {
+    lista.classList.add('oculto'); seletor.setAttribute('aria-expanded', 'false');
+    seletor.parentElement.style.marginBottom = '';
+    document.removeEventListener('pointerdown', fora, true);
+    if (devolverFoco) seletor.focus();
+  }
+  function fora(e) { if (!seletor.contains(e.target) && !lista.contains(e.target)) fechar(false); }
+  seletor.addEventListener('click', () => aberto() ? fechar(false) : abrir(false));
+  seletor.addEventListener('keydown', e => { if (e.key === 'ArrowDown' && !aberto()) { e.preventDefault(); abrir(true); } });
+  lista.addEventListener('click', e => { if (e.target.closest('[role="menuitem"]')) fechar(false); });
+  lista.addEventListener('keydown', e => {
+    const lst = itens(), i = lst.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); fechar(true); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); lst[(i + 1) % lst.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); lst[(i - 1 + lst.length) % lst.length].focus(); }
+  });
+  seletor.addEventListener('keydown', e => { if (e.key === 'Escape' && aberto()) fechar(true); });
 }
 function exportar() {
   const conteudo = JSON.stringify({ ...db, exportadoEm: agora() }, null, 2);

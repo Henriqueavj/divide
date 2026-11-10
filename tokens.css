@@ -67,8 +67,9 @@
   --ameixa-700: #5B2A66;     /* link visitado; derivado do quase-preto #1E0126 */
   --areia-100: #EFE6D6;
 
-  /* Noite: fundos do tema escuro, petróleo bem fechado (não preto puro) */
-  --noite-950: #071C24;      /* página */
+  /* Noite: fundos do tema escuro. A página é quase preta; o petróleo fica de acento (cards, menu) */
+  --noite-990: #0B0E0F;      /* página (quase preto, levemente frio) */
+  --noite-950: #071C24;      /* texto sobre ação, inverso */
   --noite-900: #0C2630;      /* superfície */
   --noite-850: #12303B;      /* destaque / superfície elevada */
   --noite-800: #1A3B47;      /* borda padrão */
@@ -97,6 +98,7 @@
   --cor-fundo-superficie: var(--neutro-50);
   --cor-fundo-card: var(--neutro-0);         /* cards sobre o fundo cinza (Início e tela do grupo) */
   --cor-fundo-grupo: var(--neutro-50);       /* fundo abaixo da capa na tela do grupo */
+  --cor-fundo-flutuante: var(--neutro-0);    /* menus e camadas que flutuam sobre a tela (com borda e sombra) */
   --cor-fundo-destaque: var(--neutro-100);
   --cor-borda-padrao: var(--neutro-200);
   --cor-borda-forte: var(--neutro-400);
@@ -252,10 +254,11 @@
 :root[data-tema="escuro"] {
   color-scheme: dark;
 
-  --cor-fundo-pagina: var(--noite-950);
+  --cor-fundo-pagina: var(--noite-990);
   --cor-fundo-superficie: var(--noite-900);
   --cor-fundo-card: var(--noite-900);
-  --cor-fundo-grupo: var(--noite-950);
+  --cor-fundo-grupo: var(--noite-990);
+  --cor-fundo-flutuante: var(--noite-850);
   --cor-fundo-destaque: var(--noite-850);
   --cor-borda-padrao: var(--noite-800);
   --cor-borda-forte: var(--noite-700);
