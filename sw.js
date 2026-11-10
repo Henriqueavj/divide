@@ -1,8 +1,8 @@
 // Guarda o app no aparelho para funcionar sem internet.
 // A página principal busca a versão nova quando há internet e usa a cópia guardada quando não há.
 // Ao publicar mudanças em arquivos que não sejam o index.html, aumente a VERSAO.
-const VERSAO = 'divide-v14';
-const ARQUIVOS = ['./', './index.html', './tokens.css', './manifest.webmanifest', './icone-192.png', './icone-512.png'];
+const VERSAO = 'divide-v15';
+const ARQUIVOS = ['./', './index.html', './tokens.css', './manifest.webmanifest', './icone-192.png', './icone-512.png', './icone-any-192.png', './icone-any-512.png', './apple-touch-icon.png', './favicon.svg', './favicon-32.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSAO).then(c => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
