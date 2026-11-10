@@ -168,6 +168,13 @@
   --cor-capa-casal: var(--ameixa-100);
   --cor-capa-outro: var(--areia-100);
 
+  /* ---------- Semânticos: ilustração por tipo de grupo ---------- */
+  /* Cor da figura principal de cada capa (pin, casa, coração, metade do logo), sobre --cor-capa-*. */
+  --cor-ilustracao-viagem: #1F6B57;
+  --cor-ilustracao-casa: #0A4359;
+  --cor-ilustracao-casal: #6B3A6E;
+  --cor-ilustracao-outro: #9A5B2C;
+
   /* ---------- Sombras (tingidas de petróleo / neutro) ---------- */
   --sombra-flutuante: 0 4px 14px rgba(10, 67, 89, .22);
   --sombra-suave: 0 4px 14px rgba(16, 32, 30, .10);
@@ -304,6 +311,11 @@
   --cor-capa-casa: #1A4556;
   --cor-capa-casal: #3E2A47;
   --cor-capa-outro: #4A4030;
+
+  --cor-ilustracao-viagem: #A7DCC9;
+  --cor-ilustracao-casa: #9CC3D3;
+  --cor-ilustracao-casal: #D9B8DC;
+  --cor-ilustracao-outro: #E8C69A;
 
   --sombra-flutuante: 0 4px 14px rgba(0, 0, 0, .45);
   --sombra-suave: 0 4px 14px rgba(0, 0, 0, .35);

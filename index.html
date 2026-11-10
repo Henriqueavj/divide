@@ -393,7 +393,160 @@ body.com-menu .fabs { bottom: calc(80px + env(safe-area-inset-bottom)); }
 .selo.festeja { animation: selo-entra var(--duracao-destaque) var(--curva-destaque) var(--duracao-media) backwards; }
 .capa-grande .ondas.pulso > * { animation-delay: calc(var(--duracao-media) + var(--n, 0) * var(--duracao-escalonamento)); }
 
+/* ===== Ilustrações (vetor, cores dos tokens) ===== */
+.ilustracao-capa { position: absolute; right: 18px; top: 36px; width: 140px; height: 140px; pointer-events: none; }
+.capa-grande > .ilustracao-capa { position: absolute; }
+.ilustracao-capa .i-figura { fill: var(--figura); }
+.ilustracao-capa .i-marca { fill: var(--cor-marca); }
+.ilustracao-capa .i-furo { fill: var(--cor-capa-viagem); }
+.ilustracao-capa .i-contorno { fill: none; stroke: var(--cor-texto-principal); stroke-width: 2; }
+.ilustracao-capa .i-corte, .ilustracao-capa .i-traco { fill: none; stroke: var(--cor-texto-principal); stroke-linecap: round; }
+.ilustracao-capa .i-corte { stroke-width: 2.5; }
+.ilustracao-capa .i-traco { stroke-width: 2; }
+.vazio-inicio { display: flex; flex-direction: column; align-items: center; gap: var(--espaco-md); padding: var(--espaco-lg) var(--espaco-md) var(--espaco-md); }
+.ilustracao-vazia { display: block; flex: none; }
+.vazio-textos { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: var(--espaco-lg); text-align: center; }
+.vazio-textos .t-corpo { max-width: 250px; }
+
+/* ===== Logo: parado, abertura e carregando (ver logoSvg) =====
+   Só transform e opacity. Cada parte gira/escala em torno do centro do logo (0,0). */
+.logo { display: block; overflow: visible; flex: none; }
+.logo .fundo { fill: var(--cor-capa-casa); }
+.logo .esq { fill: var(--cor-acao-principal); }
+.logo .dir, .logo .dir-verde { fill: var(--cor-marca); }
+.logo .corte { stroke: var(--cor-texto-principal); stroke-width: 4; stroke-linecap: round; }
+.logo .lente { fill: var(--cor-texto-principal); }
+.logo .lente-c { transform: scaleX(0); }
+.logo .ast { stroke: var(--neutro-0); stroke-linecap: round; }
+.logo .estrela { fill: var(--cor-acao-principal); opacity: 0; transform-box: fill-box; transform-origin: center; }
+.logo .onda { fill: none; stroke: var(--cor-acao-principal); stroke-width: 1.5; }
+.logo .bolinha { fill: var(--cor-acao-principal); opacity: .75; }
+.logo .meta, .logo .corte-g, .logo .corte-fino, .logo .lente, .logo .giro-g, .logo .orbita-g, .logo .ast { transform-box: view-box; transform-origin: 0 0; }
+.logo .m-esq { transform: translate(-24px, -3px); }
+.logo .m-dir { transform: translate(24px, 5px); }
+.logo .riscos, .logo .ceu { opacity: 0; }
+
+/* Abertura: a linha vem de perto da câmera (recortada pelo círculo), corta, as metades se afastam e o D ganha o verde. */
+.logo-abertura .dir { fill: var(--cor-acao-principal); }
+.logo-abertura .dir-verde { animation: aparece var(--duracao-curta) linear 560ms backwards; }
+.logo-abertura .corte-g { animation: logo-chegar 600ms var(--curva-entrada) both; }
+.logo-abertura .lente { animation: logo-lente 600ms linear both; }
+.logo-abertura .m-esq { animation: logo-abrir-esq var(--duracao-destaque) var(--curva-destaque) 560ms backwards; }
+.logo-abertura .m-dir { animation: logo-abrir-dir var(--duracao-destaque) var(--curva-destaque) 590ms backwards; }
+@keyframes logo-chegar { 0% { transform: scale(7); opacity: 0; } 35% { opacity: .5; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes logo-lente { 0%, 25% { transform: scaleX(1); animation-timing-function: cubic-bezier(.45, 0, .55, 1); } 90%, 100% { transform: scaleX(0); } }
+@keyframes logo-abrir-esq { from { transform: translate(0, 0); } }
+@keyframes logo-abrir-dir { from { transform: translate(0, 0); } }
+/* Logo + nome: o nome desce de cima e a frase sobe de baixo, junto com o corte. */
+.lockup { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.lockup-nome { font-family: var(--fonte-destaque-familia); font-weight: 700; font-size: var(--tamanho-32); letter-spacing: -.02em; line-height: 1.1; margin-top: 10px; }
+.lockup-frase { font-size: var(--texto-corpo); color: var(--cor-texto-secundario); margin-top: 6px; }
+.lockup-abertura .lockup-nome { animation: logo-nome var(--duracao-destaque) var(--curva-destaque) 560ms backwards; }
+.lockup-abertura .lockup-frase { animation: logo-frase var(--duracao-destaque) var(--curva-destaque) 560ms backwards; }
+@keyframes logo-nome { from { opacity: 0; transform: translateY(18px); } }
+@keyframes logo-frase { from { opacity: 0; transform: translateY(-5px); } }
+
+/* Carregando (oficial: v3 + ondas e órbita). Todos os marcos no mesmo ciclo: 31% começam a vir, 42% "ímã",
+   ~50% encaixam, 70% começam a se afastar. */
+.logo-carregando { --ciclo: 2800ms; }
+.logo-carregando .m-esq { animation: logo-onda-esq var(--ciclo) infinite; }
+.logo-carregando .m-dir { animation: logo-onda-dir var(--ciclo) infinite; }
+.logo-carregando .giro-g { animation: logo-inclinar var(--ciclo) cubic-bezier(.45, 0, .55, 1) infinite; }
+.logo-carregando .corte-g { animation: logo-esticar var(--ciclo) infinite; }
+.logo-carregando .corte-fino { animation: logo-afinar var(--ciclo) infinite; }
+.logo-carregando .lente-c { animation: logo-fuso var(--ciclo) infinite; }
+.logo-carregando .ceu { animation: logo-ceu var(--ciclo) infinite; }
+.logo-carregando .orbita-g { animation: logo-orbitar var(--ciclo) infinite; }
+.logo-carregando .orbita-g.rapida { animation-name: logo-orbitar-rapida; }
+.logo-carregando .riscos { animation: logo-riscos var(--ciclo) cubic-bezier(.45, 0, .55, 1) infinite; }
+.logo-carregando .ast { animation-name: logo-cair; animation-timing-function: linear; animation-iteration-count: infinite; }
+.logo-carregando .estrela { animation: logo-estrela var(--ciclo) infinite; }
+/* desalinhamento invertido: o D verde sobe, a metade da esquerda desce */
+@keyframes logo-onda-esq {
+  0% { transform: translate(-24px, 0); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  17.3% { transform: translate(-25.5px, 0); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  31.4% { transform: translate(-24.5px, 0); animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
+  41.7% { transform: translate(-18px, 6px); animation-timing-function: cubic-bezier(.1, .6, .3, 1); }
+  47.4% { transform: translate(-15.5px, 3px); animation-timing-function: cubic-bezier(.4, 0, .4, 1); }
+  52% { transform: translate(-16.5px, 4px); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  58.9% { transform: translate(-17px, 3.5px); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  70.3% { transform: translate(-16.5px, 3.5px); animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  100% { transform: translate(-24px, 0); }
+}
+@keyframes logo-onda-dir {
+  0% { transform: translate(24px, 0); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  17.3% { transform: translate(25.5px, 0); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  31.4% { transform: translate(24.5px, 0); animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
+  41.7% { transform: translate(18px, -5px); animation-timing-function: cubic-bezier(.1, .6, .3, 1); }
+  47.4% { transform: translate(15.5px, -2.5px); animation-timing-function: cubic-bezier(.4, 0, .4, 1); }
+  52% { transform: translate(16.5px, -3.5px); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  58.9% { transform: translate(17px, -3px); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  70.3% { transform: translate(16.5px, -3px); animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  100% { transform: translate(24px, 0); }
+}
+@keyframes logo-inclinar { 0%, 31.4% { transform: rotate(0deg); } 61.1% { transform: rotate(-2.5deg); } 100% { transform: rotate(0deg); } }
+/* espremida pelas metades, a linha estica nas pontas... */
+@keyframes logo-esticar {
+  0%, 31.4% { transform: scaleY(1); animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
+  41.7% { transform: scaleY(1.1); animation-timing-function: cubic-bezier(.1, .6, .3, 1); }
+  49.7% { transform: scaleY(1.07); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  70.3% { transform: scaleY(1.06); animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  93.1%, 100% { transform: scaleY(1); }
+}
+/* ...afina (estreitar a linha na horizontal = traço mais fino, sem redesenhar a espessura)... */
+@keyframes logo-afinar {
+  0%, 31.4% { transform: scaleX(1); animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
+  41.7% { transform: scaleX(.4); animation-timing-function: cubic-bezier(.1, .6, .3, 1); }
+  70.3% { transform: scaleX(.5); animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  93.1%, 100% { transform: scaleX(1); }
+}
+/* ...e ganha barriga no meio (fuso) */
+@keyframes logo-fuso {
+  0%, 31.4% { transform: scaleX(0); animation-timing-function: cubic-bezier(.5, 0, .9, .6); }
+  41.7% { transform: scaleX(1); animation-timing-function: cubic-bezier(.1, .6, .3, 1); }
+  49.7% { transform: scaleX(.8); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  70.3% { transform: scaleX(.75); animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  93.1%, 100% { transform: scaleX(0); }
+}
+/* ondas e bolinhas aparecem com a aproximação e somem só no fim da freada */
+@keyframes logo-ceu {
+  0%, 31.4% { opacity: 0; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+  47.4%, 77.1% { opacity: 1; animation-timing-function: cubic-bezier(.5, 0, .9, .7); }
+  96.6%, 100% { opacity: 0; }
+}
+/* "engrenagem": acelera com a vinda, rápido enquanto estão perto, freia com o afastamento */
+@keyframes logo-orbitar {
+  0%, 31.4% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.32, 0, .67, 0); }
+  41.7% { transform: rotate(-9deg); animation-timing-function: linear; }
+  70.3% { transform: rotate(-82deg); animation-timing-function: cubic-bezier(.33, 1, .68, 1); }
+  95.4%, 100% { transform: rotate(-103deg); }
+}
+@keyframes logo-orbitar-rapida {
+  0%, 31.4% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.32, 0, .67, 0); }
+  41.7% { transform: rotate(-13deg); animation-timing-function: linear; }
+  70.3% { transform: rotate(-123deg); animation-timing-function: cubic-bezier(.33, 1, .68, 1); }
+  95.4%, 100% { transform: rotate(-155deg); }
+}
+@keyframes logo-riscos { 0%, 36% { opacity: 0; } 49.7%, 68% { opacity: 1; } 86.3%, 100% { opacity: 0; } }
+@keyframes logo-cair { from { transform: translateY(-110px); } to { transform: translateY(110px); } }
+/* estrelinha: nasce no topo da metade verde e gira para trás dela */
+@keyframes logo-estrela {
+  0%, 42.9% { opacity: 0; transform: translate(40px, -70px) scale(.4) rotate(0deg); }
+  49.7% { opacity: 1; transform: translate(32px, -62px) scale(1) rotate(30deg); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  77.1% { opacity: 1; transform: translate(18px, -24px) scale(.55) rotate(140deg); }
+  84%, 100% { opacity: 0; transform: translate(16px, -20px) scale(.4) rotate(160deg); }
+}
+
+/* Telas por cima do app: abertura (ao abrir) e carregando. Saem com fade e são removidas (param de animar). */
+.abertura-app, .carregando-app {
+  position: fixed; inset: 0; z-index: 50; background: var(--cor-fundo-pagina);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--espaco-md);
+}
+.abertura-app.saindo, .carregando-app.saindo { animation: some var(--duracao-curta) var(--curva-saida) forwards; pointer-events: none; }
+.carregando-app { animation: aparece var(--duracao-curta) var(--curva-entrada); }
+
 @media (prefers-reduced-motion: reduce) {
+  .logo *, .lockup * { animation: none !important; }
   .ondas > *, .ondas.pulso > * { animation: none; }
   .fundo-sheet .sheet, .fundo-sheet.saindo .sheet { animation: none; }
   .selo.festeja { animation-name: aparece; }
@@ -403,6 +556,19 @@ body.com-menu .fabs { bottom: calc(80px + env(safe-area-inset-bottom)); }
 <body>
 <div id="app"></div>
 <input type="file" id="arquivo-importar" accept="application/json,.json" class="oculto">
+<!-- Recortes do logo (usados por todas as cópias de logoSvg) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <clipPath id="logo-recorte" clipPathUnits="userSpaceOnUse"><circle r="120"/></clipPath>
+  <clipPath id="logo-esq" clipPathUnits="userSpaceOnUse"><path d="M0 -48A48 48 0 0 0 0 48Z"/></clipPath>
+  <clipPath id="logo-dir" clipPathUnits="userSpaceOnUse"><path d="M0 -48A48 48 0 0 1 0 48Z"/></clipPath>
+  <linearGradient id="logo-sumir" x1="0" y1="-110" x2="0" y2="110" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".18" stop-color="#fff"/>
+    <stop offset=".82" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+  </linearGradient>
+  <mask id="logo-faixa" maskUnits="userSpaceOnUse" x="-130" y="-130" width="260" height="260">
+    <rect x="-20" y="-110" width="40" height="220" fill="url(#logo-sumir)"/>
+  </mask>
+</defs></svg>
 <script>
 'use strict';
 
@@ -612,6 +778,120 @@ const ONDAS = `<svg class="ondas" viewBox="0 0 260 260" aria-hidden="true">
 // Anéis: [raio, opacidade], centrados num quadro de 520px (mesmo desenho do componente Ondas/Botão flutuante).
 const ANEIS_FAB = [[40, .22], [80, .15], [125, .10], [175, .06], [230, .04]];
 const ondasFab = respira => `<div class="ondas-fab${respira ? ' respira' : ''}" aria-hidden="true"><canvas class="ondas" width="520" height="520"></canvas></div>`;
+
+/* ================= Ilustrações (Meu Design System › Marca e ilustrações) =================
+   Vetor (SVG) com as cores dos tokens: trocam sozinhas no claro e no escuro. Paradas, não custam nada ao celular.
+   Figura principal = --cor-ilustracao-<tipo>; metade verde = --cor-marca; contorno e corte = --cor-texto-principal. */
+const ILU_ESTRELA = 'M7 0L8.089 5.911L14 7L8.089 8.089L7 14L5.911 8.089L0 7L5.911 5.911Z';
+const iluCapa = (tipo, miolo) => `<svg class="ilustracao-capa" viewBox="0 0 140 140" aria-hidden="true" style="--figura:var(--cor-ilustracao-${tipo})">
+  ${miolo}<path class="i-figura" transform="translate(6 30)" d="${ILU_ESTRELA}"/></svg>`;
+const ILU_CAPA = {
+  viagem: iluCapa('viagem', `
+    <path class="i-traco" d="M6 126C24 96 46 138 66 106" stroke-dasharray="1.094 7.66" stroke-dashoffset=".547"/>
+    <path class="i-figura" d="M75 78A26 26 0 0 1 75 26ZM51 62H75V104Z"/>
+    <path class="i-marca" d="M81 22A26 26 0 0 1 81 74ZM81 58H105L81 100Z"/>
+    <path class="i-furo" d="M75 60A8 8 0 0 1 75 44ZM81 40A8 8 0 0 1 81 56Z"/>
+    <circle class="i-contorno" cx="72" cy="44" r="27"/>`),
+  casa: iluCapa('casa', `
+    <path class="i-marca" transform="matrix(.707107 .707107 .707107 -.707107 -5 29.3)" d="M90.893 15.595C100.878 25.58 106.488 39.123 106.488 53.244L53.244 53.244Z"/>
+    <path class="i-figura" transform="matrix(.707107 .707107 .707107 -.707107 -8 32.298)" d="M53.244 0C67.365 0 80.908 5.61 90.893 15.595L53.244 53.244Z"/>
+    <rect class="i-contorno" x="31" y="73" width="70" height="42" stroke-linejoin="round"/>
+    <path class="i-figura" d="M58 116V99A9 9 0 0 1 76 99V116Z"/>
+    <path class="i-corte" d="M67 24V82"/>`),
+  casal: iluCapa('casal', `
+    <path class="i-figura" d="M70 51.7L98.3 80L70 108.3L41.7 80Z"/>
+    <circle class="i-figura" cx="55.9" cy="65.9" r="20"/>
+    <circle class="i-marca" cx="84.1" cy="65.9" r="20"/>
+    <circle class="i-contorno" cx="50" cy="58" r="19"/>
+    <path class="i-corte" d="M78 30L60 126"/>`),
+  outro: iluCapa('outro', `
+    <path class="i-figura" transform="translate(28.8 46.8)" d="M37.577 54.311C23.045 59.6 6.978 52.108 1.689 37.577C-3.6 23.045 3.892 6.978 18.423 1.689L28 28Z"/>
+    <path class="i-marca" transform="translate(55.2 37.2)" d="M18.423 1.689C32.955 -3.6 49.022 3.892 54.311 18.423C59.6 32.955 52.108 49.022 37.577 54.311L28 28Z"/>
+    <circle class="i-contorno" cx="66" cy="66" r="29"/>
+    <path class="i-corte" d="M49.1 12.4L91 127.6"/>`)
+};
+// Início sem grupos ("pessoas B"): você já está aqui; a outra pessoa, tracejada do outro lado do corte, ainda falta.
+const ILU_INICIO_VAZIA = `<svg class="ilustracao-vazia" viewBox="0 0 240 240" width="240" height="240" aria-hidden="true">
+  <g opacity=".6">
+    <circle cx="120" cy="120" r="120" fill="var(--cor-capa-casa)"/>
+    <g fill="var(--cor-acao-principal)" opacity=".35"><path d="M28 178A42 42 0 0 1 112 178Z"/><circle cx="70" cy="113" r="17"/></g>
+    <path d="M23 170A41 41 0 0 1 105 170Z" fill="none" stroke="var(--cor-texto-principal)" stroke-width="2" opacity=".4"/>
+    <g fill="none" stroke="var(--cor-marca)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5.5 3.5" opacity=".8">
+      <path d="M141.25 140.75A40.75 40.75 0 0 1 222.75 140.75Z"/><circle cx="182" cy="77" r="15.75"/></g>
+    <path d="M84.1 21.3L155.9 218.7" stroke="var(--cor-texto-principal)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2.01 9.045" stroke-dashoffset="1.005" opacity=".4"/>
+    <path transform="translate(44 62) scale(1.4286)" d="${ILU_ESTRELA}" fill="var(--cor-acao-principal)" opacity=".5"/>
+    <path transform="translate(196 166) scale(.8571)" d="${ILU_ESTRELA}" fill="var(--cor-marca)" opacity=".5"/>
+  </g></svg>`;
+
+/* ================= Logo (Meu Design System › Marca e ilustrações › Logo; movimento em Fundamentos › Movimento › Logo) =================
+   Geometria v5: metades de raio 48, corte inclinado -20°, afastamento 24. Três estados:
+   - 'parado': o logo assentado (fim da abertura).
+   - 'abertura': a linha vem da câmera, corta o círculo, as metades se afastam desalinhadas e o D ganha o verde.
+   - 'carregando' (oficial, "v3 + ondas e órbita"): metades respiram e se aproximam com ímã, a linha vira fuso,
+     ondas e 3 bolinhas em órbita anti-horária aparecem na aproximação, riscos e estrelinha no encaixe. Ciclo de 2,8 s.
+   Leveza: tudo é transform e opacity (nada de animar cor ou espessura quadro a quadro), as cópias saem do DOM
+   quando terminam e, com "menos movimento", o logo fica parado. */
+const LOGO_ESTRELA = 'M0 -7 Q1.2 -1.2 7 0 Q1.2 1.2 0 7 Q-1.2 1.2 -7 0 Q-1.2 -1.2 0 -7 Z';
+function logoSvg(tam, modo = 'parado') {
+  let semente = 7; // riscos sempre iguais
+  const rnd = () => (semente = (semente * 9301 + 49297) % 233280) / 233280;
+  const risco = (x, comp, gr, dur, op) => `<line class="ast" x1="${x.toFixed(1)}" y1="${(-comp / 2).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(comp / 2).toFixed(1)}" stroke-width="${gr.toFixed(1)}" opacity="${op.toFixed(2)}" style="animation-duration:${dur.toFixed(0)}ms;animation-delay:${(-rnd() * dur).toFixed(0)}ms"/>`;
+  const car = modo === 'carregando';
+  const bolinha = (r, ang, raio, cls = '') => `<g transform="rotate(${ang})"><g class="orbita-g ${cls}"><circle class="bolinha" cx="${r}" cy="0" r="${raio}"/></g></g>`;
+  const ceu = car ? `<g class="ceu"><circle class="onda" r="106" opacity=".12"/><circle class="onda" r="84" opacity=".2"/>
+    ${bolinha(106, 30, 3.5)}${bolinha(84, 200, 2.8)}${bolinha(95, 120, 2.2, 'rapida')}</g>` : '';
+  const riscosEsq = car ? `<g class="riscos" clip-path="url(#logo-esq)">${risco(-14, 12, 1.4, 1300, .55)}${risco(-30, 9, 1.2, 1700, .4)}</g>` : '';
+  const riscosDir = car ? `<g class="riscos" clip-path="url(#logo-dir)">${risco(12, 14, 1.4, 1200, .6)}${risco(28, 10, 1.2, 1600, .45)}</g>` : '';
+  let riscosCorte = '';
+  if (car) for (let i = 0; i < 6; i++) { const lado = i % 2 ? 1 : -1; riscosCorte += risco(lado * (5 + rnd() * 5), 8 + rnd() * 12, 1.4 + rnd() * .8, 700 + rnd() * 450, .7 + rnd() * .3); }
+  const lente = modo === 'abertura' ? '<path class="lente" d="M0 -70C6 -40 6 40 0 70C-6 40 -6 -40 0 -70Z"/>'
+    : car ? '<path class="lente lente-c" d="M0 -105C4 -45 4 45 0 105C-4 45 -4 -45 0 -105Z"/>' : '';
+  return `<svg class="logo logo-${modo}" viewBox="-120 -120 240 240" width="${tam}" height="${tam}" aria-hidden="true">
+    <circle class="fundo" r="120"/>
+    <g clip-path="url(#logo-recorte)">${ceu}
+      <g class="giro-g"><g transform="rotate(-20)">
+        <g class="meta m-esq"><path class="esq" d="M0 -48A48 48 0 0 0 0 48Z"/>${riscosEsq}</g>
+        <g class="meta m-dir">${car ? `<path class="estrela" d="${LOGO_ESTRELA}"/>` : ''}<path class="dir" d="M0 -48A48 48 0 0 1 0 48Z"/>${modo === 'abertura' ? '<path class="dir-verde" d="M0 -48A48 48 0 0 1 0 48Z"/>' : ''}${riscosDir}</g>
+        <g class="corte-g"><g class="corte-fino"><line class="corte" y1="-105" y2="105"/></g>${lente}${car ? `<g class="riscos"><g mask="url(#logo-faixa)">${riscosCorte}</g></g>` : ''}</g>
+      </g></g>
+    </g></svg>`;
+}
+const logoComNome = (tam, modo) => `<div class="lockup lockup-${modo}">${logoSvg(tam, modo)}
+  <div class="lockup-nome">divide</div><div class="lockup-frase">Contas divididas, amizades inteiras.</div></div>`;
+
+// Abertura ao abrir o app (uma vez por sessão): o logo se abre e a tela aparece. Toque pula.
+// Não aparece na tela de boas-vindas (ela já abre com o logo + nome) nem com "menos movimento".
+function aberturaDoApp() {
+  let vista = false;
+  try { vista = sessionStorage.getItem('divide-abertura') === '1'; sessionStorage.setItem('divide-abertura', '1'); } catch (e) {}
+  if (vista || menosMovimento() || !db.euId) return;
+  const tela = document.createElement('div');
+  tela.className = 'abertura-app';
+  tela.innerHTML = logoSvg(240, 'abertura'); // tamanho do Design System
+  document.body.appendChild(tela);
+  const fechar = () => {
+    if (tela.classList.contains('saindo')) return;
+    tela.classList.add('saindo');
+    setTimeout(() => tela.remove(), ms('--duracao-curta'));
+  };
+  tela.addEventListener('click', fechar);
+  setTimeout(fechar, 1250); // a abertura termina em ~1 s; um respiro e sai
+}
+
+// Carregando: cobre a tela com o logo girando enquanto algo demora (ex.: importar dados).
+// Fica pelo menos 1 ciclo de aproximação (~1,4 s) para não piscar. Devolve uma função que fecha.
+function mostrarCarregando(texto) {
+  const tela = document.createElement('div');
+  tela.className = 'carregando-app';
+  tela.setAttribute('role', 'status');
+  tela.innerHTML = `${logoSvg(120, 'carregando')}<p class="t-corpo sec m0">${esc(texto)}</p>`;
+  document.body.appendChild(tela);
+  const desde = performance.now();
+  return () => new Promise(ok => setTimeout(() => {
+    tela.classList.add('saindo');
+    setTimeout(() => { tela.remove(); ok(); }, ms('--duracao-curta'));
+  }, Math.max(0, 1400 - (performance.now() - desde))));
+}
 
 /* ================= Consultas ================= */
 const eu = () => db.euId;
@@ -954,7 +1234,8 @@ function avisoArmazenamento() {
 function telaBemvindo() {
   return {
     html: `
-      <div class="conteudo" style="padding-top:120px;padding-left:24px;padding-right:24px">
+      <div class="conteudo" style="padding-top:56px;padding-left:24px;padding-right:24px">
+        <div style="padding-bottom:24px">${logoComNome(120, 'abertura')}</div>
         <h1 class="t-cabecalho m0">Como você se chama?</h1>
         <p class="t-cg sec m0">Seu nome aparece nos gastos e fica salvo só neste celular.</p>
         <form id="f" class="conteudo" style="padding:0" novalidate>
@@ -1009,11 +1290,13 @@ function telaInicio() {
       ${ondasFab(true)}
       <div class="fabs"><a class="btn btn-principal fab" href="#/gasto/novo">${icone('mais')}Adicionar gasto</a></div>` : `
       <div style="padding:24px 16px 8px"><h1 class="t-cabecalho m0">Grupos</h1></div>
-      <div style="padding:16px"><div class="cartao centro">
-        ${icone('pessoas')}
-        <span class="t-cg-forte">Nenhum grupo ainda</span>
-        <span class="t-corpo sec">Crie um grupo para a viagem, a casa ou o que vocês dividem.</span>
-      </div></div>
+      <div class="vazio-inicio">
+        ${ILU_INICIO_VAZIA}
+        <div class="vazio-textos">
+          <span class="t-titulo">Nenhum grupo ainda</span>
+          <span class="t-corpo sec">Crie um grupo para a viagem, a casa ou o que vocês dividem.</span>
+        </div>
+      </div>
       ${ondasFab(true)}
       <div class="fabs"><a class="btn btn-principal fab" href="#/grupo/novo">${icone('mais')}Criar grupo</a></div>`}`,
     menu: 'grupos'
@@ -1161,6 +1444,7 @@ function telaGrupo(gid) {
     html: `
       <div class="capa-grande" style="background:${tipoDe(g).cor}">
         ${momento === 'acertado' && !dividas.length ? ONDAS.replace('class="ondas"', 'class="ondas pulso"') : ONDAS}
+        ${ILU_CAPA[g.tipo] || ILU_CAPA.outro}
         <div class="acoes">
           <a class="btn-icone" href="#/" aria-label="Voltar">${icone('seta-voltar')}</a>
           <a class="btn-icone" href="#/grupo/${gid}/config" aria-label="Configurações do grupo">${icone('engrenagem')}</a>
@@ -1875,7 +2159,9 @@ entradaArquivo.addEventListener('change', async () => {
   entradaArquivo.value = '';
   if (!arq) return;
   let novo;
-  try { novo = JSON.parse(await arq.text()); } catch (e) { return toast('Esse arquivo não é um backup válido', 'erro'); }
+  const fecharCarregando = mostrarCarregando('Lendo seus dados…');
+  try { novo = JSON.parse(await arq.text()); } catch (e) { await fecharCarregando(); return toast('Esse arquivo não é um backup válido', 'erro'); }
+  await fecharCarregando();
   if (!validarDados(novo)) return toast('Esse arquivo não é um backup do Divide', 'erro');
   const n = Object.keys(novo.grupos).length;
   const temDados = Object.keys(db.grupos).length > 0;
@@ -1953,6 +2239,7 @@ function render() {
 window.addEventListener('hashchange', () => { document.querySelectorAll('.fundo-sheet').forEach(s => s.remove()); render(); });
 window.addEventListener('storage', e => { if (e.key === CHAVE) { db = carregar(); render(); } });
 render();
+aberturaDoApp();
 
 // Funciona offline e pode virar atalho na tela inicial (só em https ou localhost).
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
